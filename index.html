@@ -659,19 +659,22 @@ function targetAt(p){const c=[];for(const x of items()){
 // ===== Reiter Personen =====
 const SKS=[['','–'],['I','SK I (rot)'],['II','SK II (gelb)'],['III','SK III (grün)'],['IV','SK IV (blau)'],['ex','tot']];
 const SKC={I:'#d00000',II:'#e0b000',III:'#1d8a3a',IV:'#1d5fbf',ex:'#111'};
-const PF=[['name','Name, Vorname'],['geb','Geburtsdatum'],['adr','Anschrift'],['tel','Telefon'],['verl','Verletzungen / Zustand'],['trans','Transport / Verbleib'],['bem','Bemerkung']];
+const PF=[['nach','Nachname'],['vor','Vorname'],['geb','Geburtsdatum'],['str','Straße, Hausnr.'],['plz','PLZ'],['ort2','Wohnort'],['tel','Telefon'],['verl','Verletzungen / Zustand'],['trans','Transport / Verbleib'],['bem','Bemerkung']];
+function migRec(r){if(r.name!==undefined&&r.nach===undefined&&r.vor===undefined){const[a,b]=String(r.name).split(',');r.nach=(a||'').trim();r.vor=(b||'').trim()}delete r.name;if(r.adr!==undefined&&r.str===undefined)r.str=r.adr;delete r.adr;return r}
+const adrOf=r=>[r.str,[r.plz,r.ort2].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+const fmtGeb=v=>{const d=v.replace(/\D/g,'');return d.length===8&&!/\./.test(v)?d.slice(0,2)+'.'+d.slice(2,4)+'.'+d.slice(4):v};
 function persRows(){const o=op();if(!o)return[];const R=[];(o.maps||[]).forEach((m,mi)=>m.items.forEach((it,ii)=>{if(!isP(it))return;const n=Math.max(1,+it.n||1);it.pp=it.pp||[];
-  for(let k=0;k<n;k++){it.pp[k]=it.pp[k]||{};const V=it.v?m.items.find(x=>x.id===it.v):null;R.push({ref:`m:${mi}:${ii}:${k}`,rec:it.pp[k],art:SYM[it.k].n,st:it.m||'',k,n,sheet:m.name,ort:V?tgName(V):it.vt||'',lbl:it.l||'',uri:SYM[it.k].uri,mi,ii})}}));
- (o.extra=o.extra||[]).forEach((r,j)=>R.push({ref:`x:${j}`,rec:r,art:r.art||'Person (ohne Zeichen)',st:'',k:0,n:1,sheet:'',ort:r.ort||'',lbl:'',uri:SYM.p.uri,extra:1,j}));return R}
+  for(let k=0;k<n;k++){it.pp[k]=migRec(it.pp[k]||{});const V=it.v?m.items.find(x=>x.id===it.v):null;R.push({ref:`m:${mi}:${ii}:${k}`,rec:it.pp[k],art:SYM[it.k].n,st:it.m||'',k,n,sheet:m.name,ort:V?tgName(V):it.vt||'',lbl:it.l||'',uri:SYM[it.k].uri,mi,ii})}}));
+ (o.extra=o.extra||[]).forEach((r,j)=>R.push({ref:`x:${j}`,rec:migRec(r),art:r.art||'Person (ohne Zeichen)',st:'',k:0,n:1,sheet:'',ort:r.ort||'',lbl:'',uri:SYM.p.uri,extra:1,j}));return R}
 function recOf(ref){const o=op(),a=ref.split(':');if(a[0]==='x')return o.extra[+a[1]];const it=o.maps[+a[1]].items[+a[2]];it.pp=it.pp||[];return it.pp[+a[3]]=it.pp[+a[3]]||{}}
 function renderPers(){const R=persRows(),f=$('pFlt').value;$('tabPersN').textContent=R.length?` (${R.length})`:'';
  const L=R.filter(r=>!f||(f==='sk'?r.rec.sk:r.art.toLowerCase().includes(f)));
  $('persList').innerHTML=L.length?L.map(r=>`<div class="pcard" style="border-left-color:${SKC[r.rec.sk]||'var(--line)'}"><div class="phead"><img src="${r.uri}" alt=""><div><b>${esc(r.art)}${r.st?' '+esc(r.st):''}${r.n>1?` – Nr. ${r.k+1} von ${r.n}`:''}</b><div class="hint">${esc([r.sheet&&'Blatt '+r.sheet,r.ort&&'Ort: '+r.ort,r.lbl].filter(Boolean).join(' · ')||'–')}</div></div>
   ${r.extra?`<button class="sm ghost del" data-xdel="${r.j}">Entfernen</button>`:`<button class="sm" data-go="${r.mi}:${r.ii}">Auf Karte</button>`}</div>
-  <div class="pgrid">${r.extra?`<label>Ort<input data-ref="${r.ref}" data-f="ort" value="${esc(r.rec.ort||'')}"></label>`:''}${PF.map(([k,n])=>`<label>${n}<input data-ref="${r.ref}" data-f="${k}" value="${esc(r.rec[k]||'')}"${k==='geb'?' inputmode="numeric" placeholder="TT.MM.JJJJ"':k==='tel'?' inputmode="tel"':''}></label>`).join('')}
-  <label>Sichtung<select data-ref="${r.ref}" data-f="sk">${SKS.map(([v,n])=>`<option value="${v}"${(r.rec.sk||'')===v?' selected':''}>${n}</option>`).join('')}</select></label></div></div>`).join('')
+  <div class="pgrid">${PF.map(([k,n])=>`<label>${n}<input data-ref="${r.ref}" data-f="${k}" value="${esc(r.rec[k]||'')}"${k==='geb'?' inputmode="numeric" placeholder="TT.MM.JJJJ"':k==='tel'?' inputmode="tel"':k==='plz'?' inputmode="numeric" maxlength="5"':''}${k==='nach'||k==='vor'||k==='ort2'?' autocapitalize="words"':''}></label>`).join('')}
+  <label>Sichtung<select data-ref="${r.ref}" data-f="sk">${SKS.map(([v,n])=>`<option value="${v}"${(r.rec.sk||'')===v?' selected':''}>${n}</option>`).join('')}</select></label>${r.extra?`<label>Aufenthaltsort<input data-ref="${r.ref}" data-f="ort" value="${esc(r.rec.ort||'')}" placeholder="z. B. Betreuungsstelle"></label>`:''}</div></div>`).join('')
   :'<p class="empty">Noch keine Personen. Personenzeichen auf der Karte setzen oder „+ Person ohne Zeichen“.</p>'}
-$('persList').oninput=e=>{const t=e.target;if(!t.dataset.ref)return;recOf(t.dataset.ref)[t.dataset.f]=t.value;if(t.dataset.f==='sk')t.closest('.pcard').style.borderLeftColor=SKC[t.value]||'var(--line)';saveSoon()};
+$('persList').oninput=e=>{const t=e.target;if(!t.dataset.ref)return;if(t.dataset.f==='geb'&&e.type==='change'){const v=fmtGeb(t.value);if(v!==t.value)t.value=v}recOf(t.dataset.ref)[t.dataset.f]=t.value;if(t.dataset.f==='sk')t.closest('.pcard').style.borderLeftColor=SKC[t.value]||'var(--line)';saveSoon()};
 $('persList').onchange=$('persList').oninput;
 $('persList').onclick=e=>{const b=e.target.closest('button');if(!b)return;
  if(b.dataset.go){const[mi,ii]=b.dataset.go.split(':').map(Number);showTab('map');openSheet(mi);sel=ii;const it=items()[ii];vb.x=it.x-vb.w/2;vb.y=it.y-vb.h/2;render();saveVb()}
@@ -681,8 +684,8 @@ $('persAdd').onclick=()=>{need();op().extra=op().extra||[];op().extra.push({art:
 $('persPrint').onclick=()=>{const o=op(),R=persRows();if(!R.length)return toast('Keine Personen erfasst');
  const td=v=>`<td>${esc(v||'')}</td>`;
  $('print').innerHTML=`<h1>${esc(o.name)} – Personenliste</h1><p style="margin:0 0 6pt">Stand ${dt(new Date())} · enthält personenbezogene Daten – nur für den Dienstgebrauch</p>
- <table style="font-size:8.5pt"><tr><th>Nr.</th><th>Art / Status</th><th>Ort / Fahrzeug</th><th>Name, Vorname</th><th>Geb.</th><th>Anschrift</th><th>Telefon</th><th>Sichtung</th><th>Verletzungen / Zustand</th><th>Transport / Verbleib</th><th>Bemerkung</th></tr>
- ${R.map((r,i)=>`<tr><td>${i+1}</td>${td(r.art+(r.st?' '+r.st:'')+(r.lbl?' – '+r.lbl:''))}${td(r.ort)}${td(r.rec.name)}${td(r.rec.geb)}${td(r.rec.adr)}${td(r.rec.tel)}${td((SKS.find(s=>s[0]===(r.rec.sk||''))||['',''])[1].replace('–',''))}${td(r.rec.verl)}${td(r.rec.trans)}${td(r.rec.bem)}</tr>`).join('')}</table>`;
+ <table style="font-size:8.5pt"><tr><th>Nr.</th><th>Art / Status</th><th>Ort / Fahrzeug</th><th>Nachname</th><th>Vorname</th><th>Geb.</th><th>Anschrift</th><th>Telefon</th><th>Sichtung</th><th>Verletzungen / Zustand</th><th>Transport / Verbleib</th><th>Bemerkung</th></tr>
+ ${R.map((r,i)=>`<tr><td>${i+1}</td>${td(r.art+(r.st?' '+r.st:'')+(r.lbl?' – '+r.lbl:''))}${td(r.ort)}${td(r.rec.nach)}${td(r.rec.vor)}${td(r.rec.geb)}${td(adrOf(r.rec))}${td(r.rec.tel)}${td((SKS.find(s=>s[0]===(r.rec.sk||''))||['',''])[1].replace('–',''))}${td(r.rec.verl)}${td(r.rec.trans)}${td(r.rec.bem)}</tr>`).join('')}</table>`;
  setTimeout(()=>window.print(),50)};
 function showTab(t){$('s-map').classList.toggle('on',t==='map');$('s-pers').classList.toggle('on',t==='pers');$('tabMap').classList.toggle('on',t==='map');$('tabPers').classList.toggle('on',t==='pers');
  if(t==='pers')renderPers();else{render()}}
