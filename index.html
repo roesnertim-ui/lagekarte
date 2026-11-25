@@ -319,7 +319,7 @@ const OBJDEF=Object.entries(OBJ).map(([k,[n]])=>[k,n]);
 const PEN={r:'#d00000',b:'#0050c8',k:'#111111',g:'#08803a'};
 const MARK=Object.entries(PEN).map(([k,c])=>`<marker id="m-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`).join('');
 const GRID='<pattern id="g1" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#e4e8eb" stroke-width="1"/></pattern><pattern id="g5" width="200" height="200" patternUnits="userSpaceOnUse"><rect width="200" height="200" fill="url(#g1)"/><path d="M200 0H0V200" fill="none" stroke="#c9d0d6" stroke-width="1.5"/></pattern>';
-const TOOLS=[['sel','Auswahl'],['wall','Wand'],['room','Raum'],['door','Tür'],['win','Fenster'],['stair','Treppe'],['arrow','Pfeil'],['lead','Zeigelinie'],['hose','Schlauch'],['rail','Gleis'],['barrier','Absperrung'],['zone','Bereich'],['free','Freihand'],['text','Text'],['pal','Zeichen …']];
+const TOOLS=[['sel','Auswahl'],['wall','Wand'],['room','Raum'],['door','Tür'],['win','Fenster'],['stair','Treppe'],['arrow','Pfeil'],['lead','Zeigelinie'],['hose','Schlauch'],['rail','Gleis'],['road','Straße'],['barrier','Absperrung'],['zone','Bereich'],['free','Freihand'],['text','Text'],['pal','Zeichen …']];
 const LBL={door:0,win:0,wall:0,img:0};
 const SCAL=['sym','obj','door','win','stair','text'],ROT=['sym','obj','door','win','stair','text','img'],STRK=['wall','room','line'];
 
@@ -350,6 +350,7 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
   s=`<path d="${d}" fill="none" stroke="rgba(0,0,0,0)" stroke-width="26" stroke-linecap="round"/>`;
   if(it.k==='hose')s+=`<path d="${d}" fill="none" stroke="#0050c8" stroke-width="${it.w||5}" stroke-linecap="round" stroke-linejoin="round"/>`;
   else if(it.k==='barrier')s+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="${it.w||8}"/><path d="${d}" fill="none" stroke="#e00000" stroke-width="${it.w||8}" stroke-dasharray="16 12"/>`;
+  else if(it.k==='road'){const W=it.w||280,dd=(it.pts.length>2?pds:pd)(it.pts);s=`<path d="${dd}" fill="none" stroke="rgba(0,0,0,0)" stroke-width="${W+20}" stroke-linecap="round" stroke-linejoin="round"/><path d="${dd}" fill="none" stroke="#c4c8cc" stroke-width="${W}" stroke-linecap="butt" stroke-linejoin="round"/>`+(W>=200?`<path d="${dd}" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="36 24"/>`:'')}
   else if(it.k==='rail'){const a=(it.pts.length>2?pds:pd)(railOff(it.pts,28)),b=(it.pts.length>2?pds:pd)(railOff(it.pts,-28));s=`<path d="${d}" fill="none" stroke="rgba(0,0,0,0)" stroke-width="90"/><path d="${d}" fill="none" stroke="#a08f7a" stroke-width="96" stroke-dasharray="10 16"/><path d="${a}" fill="none" stroke="#333" stroke-width="6"/><path d="${b}" fill="none" stroke="#333" stroke-width="6"/>`}
   else if(it.k==='sect')s=`<path d="${d}Z" fill="${it.fc||'#ed7d31'}" fill-opacity="${it.op||.3}" stroke="none"/>`;
   else if(it.k==='yarrow'||it.k==='flowbig'){const F=it.k==='flowbig',A=fat(it.pts[0],it.pts[it.pts.length-1],F?110:90,F?220:170,F?160:110);
@@ -373,7 +374,8 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
  case 'obj':{const O=OBJ[it.k];if(!O)break;s=`<g transform="${tf}">${O[1]}</g>`+halo(it.x,it.y+(it.k==='hyd'?44:it.k==='pkw'||it.k==='krad'?60:72)*(it.s||1),it.l,20);break}
  case 'img':s=`<image href="${it.src}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" opacity="${it.op||.8}" preserveAspectRatio="none"/>`;break}
  return `<g data-i="${i}"${it.lock?' pointer-events="none"':''}>${s}${phBadge(it)}</g>`}
-function itemsSVG(list){return list.map((it,i)=>rItem(it,i,list)).join('')}
+function roadEdges(list){return list.filter(x=>x.t==='line'&&x.k==='road'&&x.pts.length>1).map(x=>`<path d="${(x.pts.length>2?pds:pd)(x.pts)}" fill="none" stroke="#4a4f55" stroke-width="${(x.w||280)+12}" stroke-linecap="butt" stroke-linejoin="round"/>`).join('')}
+function itemsSVG(list){const e=roadEdges(list);return (e?`<g pointer-events="none">${e}</g>`:'')+list.map((it,i)=>rItem(it,i,list)).join('')}
 function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(vb.y)} ${r1(vb.w)} ${r1(vb.h)}`);
  if(!s){map.innerHTML='';return}
  map.innerHTML=`<defs>${MARK}${GRID}</defs>`+(snapOn?`<rect x="-20000" y="-20000" width="40000" height="40000" fill="url(#g5)" pointer-events="none"/>`:'')+`<g id="world">${itemsSVG(s.items)}</g><g id="ov"></g>`;
@@ -387,7 +389,7 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
  if(it.t==='line'&&it.pts.length===2)o+=H(...it.pts[0],'l0')+H(...it.pts[1],'l1');
  $('ov').innerHTML=o}
 function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
- const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',leader:'Zeigelinie',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
+ const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',road:'Straße',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',leader:'Zeigelinie',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
  +(isP(it)?(()=>{const vs=targets(s.items);return `<span class="grp"><span class="szl">Ort / Fahrzeug</span><select id="pV" style="width:auto;max-width:220px;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(tgKind(x)+': '+tgName(x))}${x.id===it.v&&it.va?' (auto)':''}</option>`).join('')}<option value="txt"${it.vt?' selected':''}>Freitext …</option></select>${it.vt!==undefined?`<input id="pVt" value="${esc(it.vt||'')}" placeholder="z. B. Wohnung links" style="flex:0 0 170px;min-height:36px">`:''}</span>`})():'')
  +(it.t==='sym'&&SYM[it.k].c==='Personen'?`<span class="grp"><span class="szl">Anzahl</span><button class="sm" data-a="n-" aria-label="Anzahl verringern">−</button><input id="pN" type="number" min="0" max="999" inputmode="numeric" pattern="[0-9]*" value="${it.n||''}" placeholder="–" aria-label="Anzahl"><button class="sm" data-a="n+" aria-label="Anzahl erhöhen">+</button></span><span class="grp"><span class="szl">Status</span><button class="sm${!it.m?' on':''}" data-a="m0">–</button><button class="sm${it.m==='?'?' on':''}" data-a="m?">? vermutet</button><button class="sm${it.m==='!'?' on':''}" data-a="m!">! bestätigt</button></span>`:'')
@@ -452,7 +454,7 @@ map.onpointerdown=e=>{if(!need())return;
  switch(tool){case 'wall':n={t:'wall',x1:q.x,y1:q.y,x2:q.x,y2:q.y,w:10};break;
   case 'room':n={t:'room',x:q.x,y:q.y,w:0,h:0,l:'',sw:6};break;
   case 'zone':n={t:'zone',x:r1(p.x),y:r1(p.y),r:0,l:'Gefahrenbereich'};break;
-  case 'arrow':case 'hose':case 'barrier':case 'rail':case 'free':n={t:'line',k:tool,pts:[[r1(p.x),r1(p.y)]],c:pen,l:''};break;
+  case 'arrow':case 'hose':case 'barrier':case 'rail':case 'road':case 'free':n={t:'line',k:tool,pts:[[r1(p.x),r1(p.y)]],c:pen,l:''};break;
   case 'lead':n={t:'line',k:'leader',pts:[[r1(p.x),r1(p.y)],[r1(p.x),r1(p.y)]],c:'k',l:''};break;
   case 'door':n={t:'door',x:q.x,y:q.y,r:0,s:1,f:1};break;case 'win':n={t:'win',x:q.x,y:q.y,r:0,s:1};break;
   case 'stair':n={t:'stair',x:q.x,y:q.y,r:0,s:1};break;case 'text':n={t:'text',x:r1(p.x),y:r1(p.y),r:0,s:1,l:'Text',c:pen};break;
@@ -484,6 +486,7 @@ map.onpointerup=map.onpointercancel=e=>{if(e.pointerId===penId)penId=null;if(!pt
    if(P&&T){items().pop();if(!T.id)T.id=uid();P.v=T.id;delete P.va;delete P.vt;sel=items().indexOf(P);save();act=null;render();toast('Zugeordnet: '+tgName(T));return}
    bad=Math.hypot(b2[0]-a[0],b2[1]-a[1])<20*pxW()}
   else if(it.t==='line'){if(it.pts.length<2)bad=true;else it.pts=it.k==='free'?rdp(it.pts,.35*pxW()):rdp(it.pts,(it.k==='barrier'?6:2.5)*pxW())}
+  if(!bad&&it.t==='line'&&it.k==='road'){const P=it.pts;if(Math.hypot(P[P.length-1][0]-P[0][0],P[P.length-1][1]-P[0][1])<60)bad=true;else{const L=items();L.splice(L.indexOf(it),1);let k=L.findIndex(x=>!(x.t==='img'||(x.t==='line'&&(x.k==='water'||x.k==='road'))));L.splice(k<0?L.length:k,0,it)}}
   if(bad){items().pop();undo.pop();sel=-1}
   if(!bad)autoAssign(it,items());
   if(!bad&&['wall','room','door','win','stair','line','zone'].includes(it?.t))sel=-1;
@@ -503,7 +506,8 @@ $('props').onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a,s=sh(),it
  if(a==='s-'||a==='s+')it.s=Math.max(.2,Math.min(8,Math.round((it.s||1)*(a==='s+'?1.15:1/1.15)*100)/100));
  if(a==='r-')it.r=((it.r||0)-15)%360;if(a==='r+')it.r=((it.r||0)+15)%360;if(a==='r90')it.r=((it.r||0)+90)%360;
  if(a==='flip')it.f=-(it.f||1);
- if(a==='w-'||a==='w+'){const key=it.t==='room'?'sw':'w',d={wall:10,room:6,line:4}[it.t];it[key]=Math.max(1,Math.min(40,(it[key]||d)+(a==='w+'?2:-2)))}
+ if((a==='w-'||a==='w+')&&it.t==='line'&&it.k==='road'){it.w=Math.max(80,Math.min(1200,(it.w||280)+(a==='w+'?40:-40)))}
+ else if(a==='w-'||a==='w+'){const key=it.t==='room'?'sw':'w',d={wall:10,room:6,line:4}[it.t];it[key]=Math.max(1,Math.min(40,(it[key]||d)+(a==='w+'?2:-2)))}
  if(a.startsWith('c-'))it.c=a.slice(2);
  if(a==='n+')it.n=Math.min(999,(+it.n||0)+1);if(a==='n-')it.n=Math.max(0,(+it.n||0)-1);
  if(a==='m0')delete it.m;if(a==='m?')it.m='?';if(a==='m!')it.m='!';
