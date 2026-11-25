@@ -146,17 +146,20 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
 <dialog id="dPal"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Zeichen wählen</h2><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
  <input id="palQ" type="search" placeholder="Suchen, z. B. verletzt, HLF, Gas" style="margin:8px 0"><div id="palL"></div></dialog>
 <dialog id="dNew"><form id="dNewF"><h2>Neues Blatt</h2>
- <label for="nsTpl">Vorlage</label><select id="nsTpl"><option value="leer" data-n="Lageplan">Lageplan (leer, mit Nordpfeil)</option><option value="grundriss" data-n="Grundriss EG">Grundriss (Draufsicht)</option><option value="schnitt" data-n="Schnitt">Gebäudeschnitt</option><option value="strasse" data-n="Unfallstelle">Straße (TH / VU)</option><option value="kreuzung" data-n="Kreuzung">Kreuzung (TH / VU)</option><option value="bahn" data-n="Bahnstrecke">Bahnstrecke (2 Gleise, Zug)</option><option value="rhein" data-n="Rhein">Fluss / Rhein (Wasserrettung)</option><option value="rheinbb" data-n="Wasserrettung Rhein">Wasserrettung Rhein Braubach – Sektoren nach AEP</option></select>
+ <label for="nsTpl">Vorlage</label><select id="nsTpl"><option value="leer" data-n="Lageplan">Lageplan (leer, mit Nordpfeil)</option><option value="grundriss" data-n="Grundriss EG">Grundriss (Draufsicht)</option><option value="schnitt" data-n="Schnitt">Gebäudeschnitt</option><option value="strasse" data-n="Unfallstelle">Straße (TH / VU)</option><option value="kreuzung" data-n="Kreuzung">Kreuzung (TH / VU)</option><option value="bahn" data-n="Bahnstrecke">Bahnstrecke (2 Gleise, Zug)</option><option value="rhein" data-n="Rhein">Fluss / Rhein (Wasserrettung)</option><option value="rheinbb" data-n="Wasserrettung Rhein">Wasserrettung Rhein (Rhein-Lahn-Kreis) – Sektoren nach AEP</option></select>
  <div id="nsRhein" hidden><div class="row"><div><label for="rhE">Ereignisort Rhein-km</label><input id="rhE" inputmode="decimal" placeholder="z. B. 577,8"></div><div><label for="rhU">Uhrzeit Ereignis (optional)</label><input id="rhU" type="time"></div></div>
   <div class="row"><div><label for="rhT">Zeit seit Ereignis bis Eintreffen 1. Einsatzmittel (min)</label><input id="rhT" inputmode="decimal" value="10"></div><div><label for="rhV">Fließgeschwindigkeit (m/s)</label><input id="rhV" inputmode="decimal" value="3,0"></div></div>
   <p class="hint">Ohne genaue Angaben nach AEP: 3,0 m/s und 10 min. Such- und Beobachtungssektor je 10 min Strecke.</p>
-  <pre id="rhRes" style="white-space:pre-wrap;font:13px/1.4 system-ui;background:var(--btn);padding:8px;border-radius:8px;margin:6px 0"></pre><button type="button" class="sm" id="rhCopy">Sektorenansage kopieren</button></div>
+  <pre id="rhRes" style="white-space:pre-wrap;font:13px/1.4 system-ui;background:var(--btn);padding:8px;border-radius:8px;margin:6px 0"></pre><button type="button" class="sm" id="rhCopy">Sektorenansage kopieren</button>
+  <div class="row" style="align-items:center;margin-top:10px"><b style="flex:1 1 auto">Aktuelle Werte (PEGELONLINE)</b><button type="button" class="sm fix" id="rhLiveBtn">Aktualisieren</button></div>
+  <pre id="rhLive" style="white-space:pre-wrap;font:13px/1.4 system-ui;background:var(--btn);padding:8px;border-radius:8px;margin:6px 0"></pre>
+  <details><summary class="hint" style="cursor:pointer;min-height:36px">Eigene Landmarken ergänzen</summary><p class="hint">Eine Zeile je Landmarke: <code>Rhein-km;linksrheinisch;rechtsrheinisch</code>, z. B. <code>556,1;;Anleger St. Goarshausen</code>. Wird nur auf diesem Gerät gespeichert.</p><textarea id="rhLm" rows="5" placeholder="556,1;;Anleger St. Goarshausen"></textarea></details></div>
  <div id="nsSchnitt" hidden><div class="row"><div><label for="nsN">Geschosse über Gelände</label><input id="nsN" type="number" min="1" max="12" value="3"></div><div><label for="nsD">Dach</label><select id="nsD"><option value="sattel">Satteldach</option><option value="flach">Flachdach</option></select></div></div>
   <label style="display:flex;gap:8px;align-items:center;font-size:15px;color:var(--ink)"><input id="nsK" type="checkbox" checked style="width:22px;min-height:22px"> Kellergeschoss</label></div>
  <label for="nsName">Name des Blatts</label><input id="nsName" placeholder="z. B. Grundriss 1. OG">
  <div class="row" style="margin-top:12px"><button class="pri">Anlegen</button><button type="button" class="ghost fix" id="dNewC">Abbrechen</button></div></form></dialog>
 <dialog id="dSheet"><h2>Blatt</h2><label for="shName">Name</label><div class="row"><input id="shName"><button class="fix" data-a="ren">Umbenennen</button></div>
- <div class="dl"><button data-a="bg">Foto / Plan als Hintergrund</button><button data-a="unlock">Fixierungen lösen</button><button data-a="png">Als Bild (PNG) speichern</button><button data-a="clr">Blatt leeren</button><button data-a="del" class="del">Blatt löschen</button><button data-a="close" class="ghost">Schließen</button></div>
+ <div class="dl"><button data-a="bg">Foto / Plan als Hintergrund</button><button data-a="unlock">Fixierungen lösen</button><button data-a="png">Als Bild (PNG) speichern</button><button data-a="live">Pegelwerte aktualisieren</button><button data-a="clr">Blatt leeren</button><button data-a="del" class="del">Blatt löschen</button><button data-a="close" class="ghost">Schließen</button></div>
  <p class="hint">Hintergrundbilder werden verkleinert gespeichert, belegen aber spürbar Speicher im Browser.</p><input id="bgFile" type="file" accept="image/*" hidden></dialog>
 <svg id="meas" aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:10px;height:10px;visibility:hidden"></svg>
 <div id="print"></div>
@@ -302,6 +305,8 @@ function toW(cx,cy){const m=map.getScreenCTM();if(!m)return{x:0,y:0};const q=new
 const halo=(x,y,t,fs,c='#000',a='middle')=>t?`<text x="${r1(x)}" y="${r1(y)}" font-size="${fs}" font-family="Arial,Helvetica,sans-serif" font-weight="bold" text-anchor="${a}" fill="${c}" stroke="#fff" stroke-width="${fs/5}" paint-order="stroke" stroke-linejoin="round">${esc(t)}</text>`:'';
 const pd=p=>p.map((q,i)=>(i?'L':'M')+r1(q[0])+','+r1(q[1])).join('');
 const railOff=(p,dd)=>p.map((q,i)=>{const a=p[Math.max(0,i-1)],b=p[Math.min(p.length-1,i+1)],nx=a[1]-b[1],ny=b[0]-a[0],l=Math.hypot(nx,ny)||1;return[q[0]+nx/l*dd,q[1]+ny/l*dd]});
+const fat=(p0,p1,w,hw,hl)=>{const dx=p1[0]-p0[0],dy=p1[1]-p0[1],L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,nx=-uy,ny=ux,bx=p1[0]-ux*hl,by=p1[1]-uy*hl,P=(x,y,o)=>r1(x+nx*o)+','+r1(y+ny*o);
+ return{d:`M${P(p0[0],p0[1],w/2)}L${P(bx,by,w/2)}L${P(bx,by,hw/2)}L${r1(p1[0])},${r1(p1[1])}L${P(bx,by,-hw/2)}L${P(bx,by,-w/2)}L${P(p0[0],p0[1],-w/2)}Z`,ang:Math.atan2(dy,dx)*180/Math.PI,mx:(p0[0]+bx)/2,my:(p0[1]+by)/2}};
 const pds=p=>{if(p.length<3)return pd(p);let d='M'+r1(p[0][0])+','+r1(p[0][1]);for(let i=1;i<p.length-1;i++)d+='Q'+r1(p[i][0])+','+r1(p[i][1])+' '+r1((p[i][0]+p[i+1][0])/2)+','+r1((p[i][1]+p[i+1][1])/2);const l=p[p.length-1];return d+'L'+r1(l[0])+','+r1(l[1])};
 function rItem(it,i){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0}) scale(${it.s||1})`;
  switch(it.t){
@@ -315,9 +320,11 @@ function rItem(it,i){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotat
   if(it.k==='hose')s+=`<path d="${d}" fill="none" stroke="#0050c8" stroke-width="${it.w||5}" stroke-linecap="round" stroke-linejoin="round"/>`;
   else if(it.k==='barrier')s+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="${it.w||8}"/><path d="${d}" fill="none" stroke="#e00000" stroke-width="${it.w||8}" stroke-dasharray="16 12"/>`;
   else if(it.k==='rail'){const a=(it.pts.length>2?pds:pd)(railOff(it.pts,28)),b=(it.pts.length>2?pds:pd)(railOff(it.pts,-28));s=`<path d="${d}" fill="none" stroke="rgba(0,0,0,0)" stroke-width="90"/><path d="${d}" fill="none" stroke="#a08f7a" stroke-width="96" stroke-dasharray="10 16"/><path d="${a}" fill="none" stroke="#333" stroke-width="6"/><path d="${b}" fill="none" stroke="#333" stroke-width="6"/>`}
-  else if(it.k==='sect')s=`<path d="${d}Z" fill="${it.fc||'#ed7d31'}" fill-opacity=".3" stroke="none"/>`;
+  else if(it.k==='sect')s=`<path d="${d}Z" fill="${it.fc||'#ed7d31'}" fill-opacity="${it.op||.3}" stroke="none"/>`;
+  else if(it.k==='yarrow'||it.k==='flowbig'){const F=it.k==='flowbig',A=fat(it.pts[0],it.pts[it.pts.length-1],F?110:90,F?220:170,F?160:110);
+   s=`<path d="${A.d}" fill="${F?'#fff':'#ffff00'}" stroke="${F?'#111':'#1f4fd1'}" stroke-width="3"${F?'':' stroke-dasharray="10 6"'}/><text transform="translate(${r1(A.mx)},${r1(A.my)}) rotate(${r1(A.ang)})" text-anchor="middle" dominant-baseline="central" font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${F?46:36}" fill="${F?'#111':'#1f4fd1'}">${esc(it.l||'')}</text>`;break}
   else if(it.k==='bound')s+=`<path d="${d}" fill="none" stroke="#111" stroke-width="${it.w||3}" stroke-dasharray="16 8"/>`;
-  else if(it.k==='water')s=`<path d="${d}Z" fill="#cfe6f7" stroke="#7fb3d9" stroke-width="2"/>`;
+  else if(it.k==='water')s=`<path d="${d}Z" fill="${it.fc||'#cfe6f7'}" stroke="#7fb3d9" stroke-width="2"/>`;
   else if(it.k==='bank')s+=`<path d="${d}" fill="none" stroke="#4a6b3a" stroke-width="${it.w||6}" stroke-linecap="round"/>`;
   else if(it.k==='fair')s+=`<path d="${d}" fill="none" stroke="#0050c8" stroke-width="${it.w||2}" stroke-dasharray="24 16"/>`;
   else if(it.k==='edge')s+=`<path d="${d}" fill="none" stroke="#555" stroke-width="${it.w||4}"/>`;
@@ -326,6 +333,7 @@ function rItem(it,i){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotat
   else s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${it.w||4}" stroke-linecap="round" stroke-linejoin="round"${it.k==='arrow'?` marker-end="url(#m-${it.c||'r'})"`:''}/>`;
   if(m)s+=halo(m[0],m[1]-12,it.l,22,it.k==='hose'?'#0050c8':c);break}
  case 'zone':s=`<circle cx="${it.x}" cy="${it.y}" r="${r1(it.r)}" fill="#e00000" fill-opacity=".07" stroke="#e00000" stroke-width="3" stroke-dasharray="14 10"/>`+halo(it.x,it.y-it.r-10,it.l,24,'#c00000');break;
+ case 'box':{const L=(it.l||'').split('|'),h=L.length*30+24,y0=it.y-h/2;s=`<rect x="${r1(it.x-it.w/2)}" y="${r1(y0)}" width="${it.w}" height="${h}" fill="#fff" stroke="#1f4fd1" stroke-width="3" stroke-dasharray="10 6"/>`+L.map((t,i)=>{const b=t[0]==='*'||t[0]==='!';return `<text x="${r1(it.x)}" y="${r1(y0+33+i*30)}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${b?24:21}" font-weight="${b?'bold':'normal'}" fill="${t[0]==='!'?'#e00000':'#111'}">${esc(b?t.slice(1):t)}</text>`}).join('');break}
  case 'text':s=`<g transform="${tf}">${halo(0,0,it.l||' ',26,PEN[it.c]||'#111',it.a||'start')}</g>`;break;
  case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);s=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,it.l,22);break}
  case 'obj':{const O=OBJ[it.k];if(!O)break;s=`<g transform="${tf}">${O[1]}</g>`+halo(it.x,it.y+(it.k==='hyd'?44:it.k==='pkw'||it.k==='krad'?60:72)*(it.s||1),it.l,20);break}
@@ -345,7 +353,7 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
  if(it.t==='line'&&it.pts.length===2)o+=H(...it.pts[0],'l0')+H(...it.pts[1],'l1');
  $('ov').innerHTML=o}
 function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
- const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze'}[it.k],zone:'Bereich',text:'Text',img:'Hintergrund'}[it.t];
+ const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
  +(it.t==='sym'&&SYM[it.k].c==='Personen'?`<span class="grp"><span class="szl">Anzahl</span><button class="sm" data-a="n-" aria-label="Anzahl verringern">−</button><input id="pN" type="number" min="0" max="999" inputmode="numeric" pattern="[0-9]*" value="${it.n||''}" placeholder="–" aria-label="Anzahl"><button class="sm" data-a="n+" aria-label="Anzahl erhöhen">+</button></span><span class="grp"><span class="szl">Status</span><button class="sm${!it.m?' on':''}" data-a="m0">–</button><button class="sm${it.m==='?'?' on':''}" data-a="m?">? vermutet</button><button class="sm${it.m==='!'?' on':''}" data-a="m!">! bestätigt</button></span>`:'')
  +(SCAL.includes(it.t)?`<span class="szl">Größe</span><button class="sm" data-a="s-" aria-label="Kleiner">−</button><input id="pS" type="range" min="20" max="600" step="5" value="${Math.round((it.s||1)*100)}" aria-label="Größe"><span id="pSv" class="szl num">${Math.round((it.s||1)*100)} %</span><button class="sm" data-a="s+" aria-label="Größer">+</button>`:'')
@@ -460,7 +468,7 @@ function renderSheets(){const l=sheets();if(shIdx>=l.length)shIdx=0;$('mSheet').
 function openSheet(i){shIdx=i;if(op())op().si=i;sel=-1;const s=sh();vb=s&&s.vb?{...s.vb}:{x:0,y:0,w:1600,h:1000};renderSheets();render();if(s&&!s.vb&&s.items.length)requestAnimationFrame(fit)}
 $('mSheet').onchange=()=>openSheet(+$('mSheet').value);
 $('mNew').onclick=()=>{if(!need())return;$('nsName').value='';$('nsTpl').value='leer';$('nsSchnitt').hidden=true;$('dNew').showModal()};
-$('nsTpl').onchange=()=>{$('nsSchnitt').hidden=$('nsTpl').value!=='schnitt';$('nsRhein').hidden=$('nsTpl').value!=='rheinbb';if(!$('nsRhein').hidden)rhPrev();if(!$('nsName').value||$('nsName').dataset.auto){$('nsName').value=$('nsTpl').selectedOptions[0].dataset.n;$('nsName').dataset.auto=1}};
+$('nsTpl').onchange=()=>{$('nsSchnitt').hidden=$('nsTpl').value!=='schnitt';$('nsRhein').hidden=$('nsTpl').value!=='rheinbb';if(!$('nsRhein').hidden){rhPrev();liveShow();if(navigator.onLine!==false)liveRefresh()}if(!$('nsName').value||$('nsName').dataset.auto){$('nsName').value=$('nsTpl').selectedOptions[0].dataset.n;$('nsName').dataset.auto=1}};
 $('nsName').oninput=()=>delete $('nsName').dataset.auto;
 $('dNewF').onsubmit=e=>{e.preventDefault();const t=$('nsTpl').value;const items=TPL[t]();if(!items)return;const s={id:uid(),name:$('nsName').value.trim()||$('nsTpl').selectedOptions[0].dataset.n,items};sheets().push(s);undo=[];save();$('dNew').close();openSheet(sheets().length-1);requestAnimationFrame(fit)};
 $('dNewC').onclick=()=>$('dNew').close();
@@ -470,6 +478,7 @@ $('dSheet').onclick=e=>{const a=e.target.dataset.a;if(!a)return;const s=sh();
  if(a==='unlock'){snap();s.items.forEach(x=>delete x.lock);save();render();$('dSheet').close();toast('Fixierungen gelöst')}
  if(a==='bg')$('bgFile').click();
  if(a==='png'){$('dSheet').close();exportPng(s)}
+ if(a==='live'){const L=s.items.filter(x=>x.live);if(!L.length){toast('Dieses Blatt enthält keine Pegelzeile');return}liveLoad().catch(()=>false).then(ok=>{snap();L.forEach(x=>x.l=liveShort(x.km));save();render();$('dSheet').close();toast(ok?'Pegelwerte aktualisiert':'PEGELONLINE nicht erreichbar – letzte gespeicherte Werte')})}
  if(a==='clr'&&confirm('Alle Elemente dieses Blatts löschen?')){snap();s.items=[];sel=-1;save();render();$('dSheet').close()}
  if(a==='del'&&confirm('Blatt „'+s.name+'“ löschen?')){sheets().splice(shIdx,1);if(!sheets().length)sheets();save();$('dSheet').close();openSheet(0)}
  if(a==='close')$('dSheet').close()};
@@ -501,56 +510,99 @@ const TPL={
  rheinbb:()=>rhBuild(),
  kreuzung:()=>[LN('edge',[[0,360],[660,360]]),LN('edge',[[940,360],[1600,360]]),LN('edge',[[0,640],[660,640]]),LN('edge',[[940,640],[1600,640]]),LN('edge',[[660,0],[660,360]]),LN('edge',[[940,0],[940,360]]),LN('edge',[[660,640],[660,1000]]),LN('edge',[[940,640],[940,1000]]),
   LN('center',[[0,500],[660,500]]),LN('center',[[940,500],[1600,500]]),LN('center',[[800,0],[800,360]]),LN('center',[[800,640],[800,1000]]),{t:'obj',k:'nord',x:1500,y:120,s:1,r:0,l:''}]};
-// ===== Wasserrettung Rhein Braubach (Daten aus AEP „Wasserrettung Rhein“ Braubach, Stand 07.08.2024) =====
+// ===== Wasserrettung Rhein (Rhein-Lahn-Kreis) – Sektoren nach AEP „Wasserrettung Rhein“ Braubach =====
 // Landmarken: [Rhein-km, linksrheinisch, rechtsrheinisch]
-const LM=[[574.7,'Oberste Krippe','Beginn Ortslage Osterspai / Didinger'],[575.4,'Beginn Campingplatz','Ende Osterspaier Ritt / Imbiss am Rhein'],[575.9,'Mitte Campingplatz / Gaststätte Sonneneck',''],[576.6,'Ende Campingplatz',''],
+// Quelle 574,7–585,7: AEP Wasserrettung Rhein Braubach (Stand 07.08.2024). Pegel: PEGELONLINE (WSV). Fähren „ca.“: OpenStreetMap-Wiki, nicht amtlich.
+const LM0=[[539.0,'Fähre Niederheimbach (ca.)','Fähre Lorch (ca.)'],[546.0,'Fähre Engelsburg (ca.)','Fähre Kaub (ca.)'],[546.2,'','Pegel Kaub'],
+ [556.0,'Fähre St. Goar (ca.)','Fähre St. Goarshausen (ca.)'],[556.4,'Pegel St. Goar',''],[566.0,'Fähre Bad Salzig (ca.)','Fähre Bornhofen (ca.)'],[570.5,'Pegel Boppard',''],
+ [574.7,'Oberste Krippe','Beginn Ortslage Osterspai / Didinger'],[575.4,'Beginn Campingplatz','Ende Osterspaier Ritt / Imbiss am Rhein'],[575.9,'Mitte Campingplatz / Gaststätte Sonneneck',''],[576.6,'Ende Campingplatz',''],
  [576.8,'Beginn Ortslage Spay / Peterskapelle',''],[577.3,'','Beginn Osterspaier Ritt'],[577.8,'','Dinkholder'],[578.1,'Boxelöfterplatz / Schotterparkplatz Fa. SCHOTTEL',''],[578.4,'Helling Fa. SCHOTTEL / Anleger Fa. SCHOTTEL',''],
- [579.0,'','Rote Fahrwassertonne'],[579.3,'','Fahrwasserteilung Oberstrom'],[579.6,'','Wasserbauplatz'],[579.9,'','Beginn Wohnmobilstellplatz Braubach'],[580.0,'Ende Ortslage Spay','Ende Wohnmobilstellplatz Braubach'],
+ [579.0,'','Rote Fahrwassertonne'],[579.3,'','Fahrwasserteilung Oberstrom'],[579.6,'','Wasserbauplatz'],[579.9,'','Beginn Wohnmobilstellplatz Braubach'],[580.0,'Ende Ortslage Spay','Ende Wohnmobilstellplatz Braubach / Pegel Braubach'],
  [580.2,'','KD-Steiger'],[580.3,'Kläranlage Rhens','Vordere Zehngasse'],[580.4,'','Viking-Steiger'],[580.6,'Nato-Rampe / Fahrwasserteilung Unterstrom / Campingplatz Wilhelm','Nato-Rampe / Fahrwasserteilung Unterstrom / Beginn Campingplatz Braubach'],
  [580.9,'','Ende Campingplatz Braubach'],[581.4,'Tauberbach / Kreisverkehr Rhens / LIDL','Finkenweg'],[581.7,'','Schlierbach'],[582.1,'Wehrturm am Rhein','Hundeschule'],[582.3,'Rheintor','Philippine'],
  [582.4,'KD-Anleger Rhens','Verbindungsweg zw. Philippine u. Z&S'],[583.0,'Beginn Rhenser Mineralbrunnen','Modelleisenbahnclub Rhein-Lahn'],[583.2,'Steiger Rhenser Mineralbrunnen','Parkplatz Victoria Mineralbrunnen'],
  [583.8,'Obersberger Bach / Beginn Ortslage Stolzenfels','Ende Kleingartenanlagen'],[584.1,'Gaststätte „Zur Kripp“','Nato-Rampe / Parkplatz Schloss Lahnstein'],[584.2,'Nato-Rampe','Schotterparkplatz Schloss Lahnstein'],
  [584.3,'Lauxbach','KD-Anleger Oberlahnstein'],[584.6,'Ende Ortslage Stolzenfels','Restaurant „Rheinkrone“ / Beginn Hafenmohle'],[585.4,'Gründgesbach',''],[585.7,'','Einmündung Lahn / Ende Hafenmohle']];
 const ORTL=[[574.7,'Boppard'],[576.8,'Spay'],[580.3,'Brey'],[581.4,'Rhens'],[583.8,'Koblenz']],ORTR=[[574.7,'Osterspai'],[577.8,'Braubach'],[581.7,'Lahnstein']];
-// Einsatzmittel je Unterabschnitt (AEP Tabelle 4 / Organigramm)
-const UEA={A:{r:['UEA 2.1 Land re.',['FL LOR 7/71-1 MZF','FL LOR 1/41-1 TSF','Nacht: + LMa-Anh']],w:['UEA 1.1 Wasser',['FL LOR 1/77-1 RTB','FL REMO 16/79-1 MZB','Nacht: FL LOR 7/77-1 RTB']],l:['UEA 3.1 Land li.',['FL REMO 16/45-1 HLF 10']]},
+const ORTMIN=574.7,ORTMAX=585.7; // Ortsgrenzen nur im Bereich der AEP-Tabelle bekannt
+const LMKEY=KEY+'.lm';
+function lmOwnText(){try{return localStorage.getItem(LMKEY)||''}catch(e){return''}}
+function lmOwn(){return lmOwnText().split('\n').map(z=>z.split(';').map(x=>x.trim())).filter(a=>a.length>=2&&isFinite(parseFloat(a[0].replace(',','.')))).map(a=>[k1(parseFloat(a[0].replace(',','.'))),a[1]||'',a[2]||''])}
+function LMall(){const m=new Map();for(const [k,l,r] of [...LM0,...lmOwn()]){const o=m.get(k)||['',''];m.set(k,[[o[0],l].filter(Boolean).join(' / '),[o[1],r].filter(Boolean).join(' / ')])}return [...m].map(([k,[l,r]])=>[k,l,r]).sort((a,b)=>a[0]-b[0])}
+// Einsatzmittel je Unterabschnitt: nur AEP Braubach (Ereignisort 577,8–581,8)
+const BB={from:577.8,to:581.8,UEA:{A:{r:['UEA 2.1 Land re.',['FL LOR 7/71-1 MZF','FL LOR 1/41-1 TSF','Nacht: + LMa-Anh']],w:['UEA 1.1 Wasser',['FL LOR 1/77-1 RTB','FL REMO 16/79-1 MZB','Nacht: FL LOR 7/77-1 RTB']],l:['UEA 3.1 Land li.',['FL REMO 16/45-1 HLF 10']]},
  S:{r:['UEA 2.2 Land re.',['FL LAHN 1/46-1 HLF 20','FL LAHN 1/34-1 DLK']],w:['UEA 1.2 Wasser',['FL LAHN 1/77-1 RTB','FL LAHN 1/79-1 MZB','Nacht: HE LAHN 36/81 MzAb']],l:['UEA 3.2 Land li.',['FL REMO 15/45-1 HLF 10','Nacht: FL KO 1/34-1 DLK']]},
- B:{r:['UEA 2.3 Land re.',['FL LAHN 1/19-1 MTW']],w:null,l:['UEA 3.3 Land li.',['TSF (Rufname im AEP prüfen)']]}};
+ B:{r:['UEA 2.3 Land re.',['FL LAHN 1/19-1 MTW']],w:null,l:['UEA 3.3 Land li.',['TSF (Rufname im AEP prüfen)']]}},
+ org:['EL: FL LOR 1/11-1 (TBZ 235 HE, RP LOREL F2) · FEZ: FL LOR 200 (RP EMS)','EA 1 Wasser: TBZ 270 RP / UKW 10 · EA 2 Land re.: FL LAHN 1/11-1, RP LOREL F1 · EA 3 Land li.: FL REMO 11-1, RP REMOS F1']};
+const GEN={A:{r:['UEA 2.1 Land re.',['nach örtlichem AEP']],w:['UEA 1.1 Wasser',['nach örtlichem AEP']],l:['UEA 3.1 Land li.',['nach örtlichem AEP']]},S:{r:['UEA 2.2 Land re.',['nach örtlichem AEP']],w:['UEA 1.2 Wasser',['nach örtlichem AEP']],l:['UEA 3.2 Land li.',['nach örtlichem AEP']]},B:{r:['UEA 2.3 Land re.',['nach örtlichem AEP']],w:null,l:['UEA 3.3 Land li.',['nach örtlichem AEP']]}};
+// Live-Werte PEGELONLINE (WSV)
+const PO='https://www.pegelonline.wsv.de/webservices/rest-api/v2/stations/';
+const PEGEL=[['Kaub',546.23,'1d26e504-7f9e-480a-b52c-5932be6549ab'],['St. Goar',556.43,'550eb7e9-172e-48e4-ae1e-d1b761b42223'],['Boppard',570.45,'2ff6379d-d168-4022-8da0-16846d45ef9b'],['Braubach',579.98,'d6dc44d1-63ac-4871-b175-60ac4040069a'],['Koblenz',591.49,'4c7d796a-39f2-4f26-97a9-3aad01713e29']];
+const WT_KOELN='a6ee8177-107b-47dd-bcfd-30960ccc6e9c',KAUB=PEGEL[0][2];
+let live=null;try{live=JSON.parse(localStorage.getItem(KEY+'.live'))}catch(e){}
+async function poGet(u){const c=new AbortController(),t=setTimeout(()=>c.abort(),8000);try{const r=await fetch(PO+u+'/currentmeasurement.json',{signal:c.signal,cache:'no-store'});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(t)}}
+async function liveLoad(){const res={t:Date.now(),W:{}};const jobs=PEGEL.map(p=>poGet(p[2]+'/W').then(v=>res.W[p[0]]=v).catch(()=>{}));
+ jobs.push(poGet(KAUB+'/Q').then(v=>res.Q=v).catch(()=>{}),poGet(WT_KOELN+'/WT').then(v=>res.WT=v).catch(()=>{}));await Promise.all(jobs);
+ if(Object.keys(res.W).length||res.Q||res.WT){live=res;try{localStorage.setItem(KEY+'.live',JSON.stringify(res))}catch(e){}return true}return false}
+const tStr=ts=>{if(!ts)return'';const d=new Date(ts);return p2(d.getDate())+'.'+p2(d.getMonth()+1)+'. '+hm(d)};
+const nf=(v,d=0)=>Number(v).toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});
+function nearPegel(km){return PEGEL.reduce((b,p)=>Math.abs(p[1]-km)<Math.abs(b[1]-km)?p:b)}
+const ST={low:'unter MNW',normal:'zwischen MNW und MHW',high:'über MHW',unknown:'',out_dated:'veraltet',commented:''};
+function liveLines(km){if(!live)return['Keine Pegelwerte geladen (offline?).'];const p=nearPegel(isFinite(km)?km:580),w=live.W[p[0]],k=live.W.Kaub,L=[];
+ if(w)L.push(`Wasserstand Pegel ${p[0]} (km ${nf(p[1],1)}): ${nf(w.value)} cm, ${tStr(w.timestamp)}`);
+ if(k&&k.stateMnwMhw&&ST[k.stateMnwMhw])L.push(`Pegel Kaub ${nf(k.value)} cm – ${ST[k.stateMnwMhw]}`);
+ if(live.Q)L.push(`Abfluss Pegel Kaub: ${nf(live.Q.value)} m³/s, ${tStr(live.Q.timestamp)}`);
+ if(live.WT)L.push(`Wassertemperatur ${nf(live.WT.value,1)} °C (Pegel Köln, km 688 – Anhaltswert), ${tStr(live.WT.timestamp)}`);
+ L.push('Fließgeschwindigkeit: wird nicht gemessen – Ansatz nach AEP 3,0 m/s'+(k&&k.stateMnwMhw==='high'?'; Hochwasser: höhere Werte möglich':''));
+ if(Date.now()-live.t>3*36e5)L.push('Achtung: Werte älter als 3 Stunden (abgerufen '+tStr(live.t)+').');return L}
+function liveShort(km){if(!live)return'Pegelwerte nicht verfügbar';const p=nearPegel(isFinite(km)?km:580),w=live.W[p[0]],P=[];
+ if(w)P.push(`Pegel ${p[0]} ${nf(w.value)} cm`);if(live.Q)P.push(`Q Kaub ${nf(live.Q.value)} m³/s`);if(live.WT)P.push(`Wasser ${nf(live.WT.value,1)} °C (Köln, Anhalt)`);P.push('Stand '+tStr((w||live.Q||live.WT||{}).timestamp||live.t));return P.join(' · ')}
+function liveShow(){const c=rhIn();$('rhLive').textContent=liveLines(c.ok?c.E:NaN).join('\n')}
+async function liveRefresh(btn){if(btn)btn.disabled=true;$('rhLive').textContent='Lade Pegelwerte …';const ok=await liveLoad().catch(()=>false);if(btn)btn.disabled=false;liveShow();if(!ok)toast('PEGELONLINE nicht erreichbar – letzte gespeicherte Werte')}
+// Sektorenrechner
 const fk=v=>v.toFixed(1).replace('.',','),k1=v=>Math.round(v*10)/10;
-function rhIn(){const E=parseFloat(String($('rhE').value).replace(',','.')),t=parseFloat(String($('rhT').value).replace(',','.')),v=parseFloat(String($('rhV').value).replace(',','.'));
- return {E,t:t>=0?t:10,v:v>0?v:3,uhr:$('rhU').value,ok:isFinite(E)}}
-function rhCalc(c){const dA=c.v*c.t*60/1000,dS=c.v*600/1000,A1=k1(c.E+dA),S1=k1(A1+dS),B1=k1(S1+dS);return{...c,E:k1(c.E),A1,S1,B1,dA,dS}}
-function near(km,side){let b=null;for(const x of LM){const t=x[side];if(!t)continue;const d=Math.abs(x[0]-km);if(d<=.25&&(!b||d<b.d))b={d,k:x[0],t}}return b?`${b.t} (${fk(b.k)})`:'–'}
+function rhIn(){const E=parseFloat(String($('rhE').value).replace(',','.')),t=parseFloat(String($('rhT').value).replace(',','.')),v=parseFloat(String($('rhV').value).replace(',','.'));return {E,t:t>=0?t:10,v:v>0?v:3,uhr:$('rhU').value,ok:isFinite(E)}}
+function rhCalc(c){const dA=c.v*c.t*60/1000,dS=c.v*600/1000,A1=k1(c.E+dA),S1=k1(A1+dS),B1=k1(S1+dS);return{...c,E:k1(c.E),A1,S1,B1}}
+function near(km,side){let b=null;for(const x of LMall()){const t=x[side];if(!t)continue;const d=Math.abs(x[0]-km);if(d<=.25&&(!b||d<b.d))b={d,k:x[0],t}}return b?`${b.t} (${fk(b.k)})`:'–'}
+const addMin=(hhmm,m)=>{if(!hhmm)return'__:__';const[h,mi]=hhmm.split(':').map(Number),d=new Date(2000,0,1,h,mi+Math.round(m));return hm(d)};
 function rhText(c){const h=k=>`re.: ${near(k,2)} | li.: ${near(k,1)}`;
  return [`Ereignisort Rhein-km ${fk(c.E)}${c.uhr?' um '+c.uhr+' Uhr':''} – ${h(c.E)}`,`Zeit seit Ereignis ${c.t} min, Fließgeschwindigkeit ${fk(c.v)} m/s`,
   `Abdriftsektor ${fk(c.E)} – ${fk(c.A1)} km (Ende ${h(c.A1)})`,`Suchsektor ${fk(c.A1)} – ${fk(c.S1)} km (Ende ${h(c.S1)})`,`Beobachtungssektor ${fk(c.S1)} – ${fk(c.B1)} km (Ende ${h(c.B1)})`].join('\n')}
-function rhPrev(){const c=rhIn();$('rhRes').textContent=c.ok?rhText(rhCalc(c)):'Bitte Rhein-km des Ereignisorts eingeben (z. B. 577,8).'}
+function rhPrev(){const c=rhIn();$('rhRes').textContent=c.ok?rhText(rhCalc(c)):'Bitte Rhein-km des Ereignisorts eingeben (z. B. 577,8).';if(c.ok)liveShow()}
 ['rhE','rhT','rhV','rhU'].forEach(i=>$(i).oninput=rhPrev);
-$('rhCopy').onclick=()=>{const c=rhIn();if(c.ok)navigator.clipboard?.writeText(rhText(rhCalc(c))).then(()=>toast('Sektorenansage kopiert'),()=>toast('Kopieren nicht möglich'))};
-function rhBuild(){const c0=rhIn();if(!c0.ok){toast('Rhein-km des Ereignisorts fehlt');return null}const c=rhCalc(c0);
- const top=c.E-.3,bot=c.B1+.3,K=500,y=km=>Math.round((km-top)*K)+400,X0=350,X1=1250,it=[];
+$('rhCopy').onclick=()=>{const c=rhIn();if(c.ok)navigator.clipboard?.writeText(rhText(rhCalc(c))+'\n'+liveLines(c.E).join('\n')).then(()=>toast('Sektorenansage kopiert'),()=>toast('Kopieren nicht möglich'))};
+$('rhLiveBtn').onclick=e=>liveRefresh(e.target);
+$('rhLm').value=lmOwnText();$('rhLm').onchange=()=>{try{localStorage.setItem(LMKEY,$('rhLm').value)}catch(e){}rhPrev();toast(lmOwn().length+' eigene Landmarken gespeichert')};
+function rhBuild(){const c0=rhIn();if(!c0.ok){toast('Rhein-km des Ereignisorts fehlt');return null}const c=rhCalc(c0),LM=LMall(),bb=c.E>=BB.from&&c.E<=BB.to,U=bb?BB.UEA:GEN;
+ const top=c.E-.4,bot=c.B1+.3,K=500,y=km=>Math.round((km-top)*K)+400,X0=350,X1=1250,it=[];
  const TA=(x,yy,l,s,a='start',col='k')=>({t:'text',x,y:yy,r:0,s,l,c:col,a});
- it.push({t:'line',k:'water',pts:[[X0,y(top)],[X1,y(top)],[X1,y(bot)],[X0,y(bot)]],c:'b',l:'',lock:1});
+ it.push({t:'line',k:'water',pts:[[X0,y(top)],[X1,y(top)],[X1,y(bot)],[X0,y(bot)]],c:'b',l:'',lock:1,fc:'#3cc8f0'});
  [['A',c.E,c.A1,'#70ad47','Abdriftsektor'],['S',c.A1,c.S1,'#ed7d31','Suchsektor'],['B',c.S1,c.B1,'#ff2a2a','Beobachtungssektor']].forEach(([key,a,b,fc,n])=>{
-  it.push({t:'line',k:'sect',fc,pts:[[X0,y(a)],[X1,y(a)],[X1,y(b)],[X0,y(b)]],c:'k',l:'',lock:1});
-  it.push(TA(800,y(a)+140,`${n} ${fk(a)} – ${fk(b)} km`,1.5,'middle'));
-  const col=(d,x,al)=>{if(!d)return;it.push(TA(x,y(a)+200,d[0],1,al));d[1].forEach((u,i)=>it.push(TA(x,y(a)+236+i*30,u,.8,al)))};
-  col(UEA[key].r,X0+14,'start');col(UEA[key].w,800,'middle');col(UEA[key].l,X1-14,'end')});
+  for(const xs of [[X0,X0+46],[X1-46,X1]])it.push({t:'line',k:'sect',fc,op:.95,pts:[[xs[0],y(a)],[xs[1],y(a)],[xs[1],y(b)],[xs[0],y(b)]],c:'k',l:'',lock:1});
+  it.push(TA(800,y(a)+120,n.toUpperCase()+`  ${fk(a)} – ${fk(b)} km`,1.4,'middle'));
+  const col=(d,x,al)=>{if(!d)return;it.push(TA(x,y(a)+190,d[0],1,al));d[1].forEach((u,i)=>it.push(TA(x,y(a)+226+i*30,u,.8,al)))};
+  col(U[key].r,X0+62,'start');col(U[key].w,800,'middle');col(U[key].l,X1-62,'end')});
  it.push(LN('bank',[[X0,y(top)],[X0,y(bot)]]),LN('bank',[[X1,y(top)],[X1,y(bot)]]));
- [c.E,c.A1,c.S1,c.B1].forEach(k=>it.push({t:'line',k:'bound',pts:[[X0-120,y(k)],[X1+120,y(k)]],c:'k',l:''}),);
- [c.A1,c.S1,c.B1].forEach(k=>it.push(TA(X1-14,y(k)-12,fk(k)+' km',1.1,'end')));
- for(const [k,li,re] of LM){if(k<top||k>bot)continue;const sh2=t=>t.split(' / ').slice(0,2).join(' / ');if(re)it.push(TA(X0-30,y(k)+9,`${sh2(re)}  ${fk(k)}`,.9,'end'));if(li)it.push(TA(X1+30,y(k)+9,`${fk(k)}  ${sh2(li)}`,.9,'start'))}
- const ort=(list,x,al)=>{let last=null;for(const [k,n] of list){if(k<=top)last=[k,n]}const shown=new Set();const put=(k,n)=>{if(shown.has(n))return;shown.add(n);it.push(TA(x,Math.max(y(k),y(top))-30,n.toUpperCase(),1,al,'b'))};if(last)put(top,last[1]);for(const [k,n] of list)if(k>top&&k<=bot)put(k,n)};
+ [c.E,c.A1,c.S1,c.B1].forEach(k=>it.push({t:'line',k:'bound',pts:[[X0-120,y(k)],[X1+120,y(k)]],c:'k',l:''}));
+ const sh2=t=>t.split(' / ').slice(0,2).join(' / ');
+ for(const [k,li,re] of LM){if(k<top||k>bot)continue;if(re)it.push(TA(X0-30,y(k)+9,`${sh2(re)}  ${fk(k)}`,.9,'end'));if(li)it.push(TA(X1+30,y(k)+9,`${fk(k)}  ${sh2(li)}`,.9,'start'))}
+ const ort=(list,x,al)=>{if(bot<ORTMIN||top>ORTMAX)return;let last=null;for(const [k,n] of list){if(k<=top)last=[k,n]}const shown=new Set();const put=(k,n)=>{if(shown.has(n))return;shown.add(n);it.push(TA(x,Math.max(y(k),y(top))-30,n.toUpperCase(),1,al,'b'))};if(last&&top>=ORTMIN)put(top,last[1]);for(const [k,n] of list)if(k>top&&k<=bot)put(k,n)};
  ort(ORTR,X0-30,'end');ort(ORTL,X1+30,'start');
- it.push({t:'sym',k:'p_verm',x:800,y:y(c.E),s:1,r:0,l:'Ereignisort'+(c.uhr?' '+c.uhr:''),m:'?'});
- if(y(c.S1)-y(c.A1)>560)it.push({t:'line',k:'arrow',pts:[[800,y(c.S1)-40],[800,y(c.A1)+380]],c:'k',l:'Suchrichtung Boote'});
- it.push({t:'line',k:'arrow',pts:[[800,90],[800,250]],c:'b',l:''},TA(825,190,'Fließrichtung',1,'start','b'));
+ // Infokästen wie AEP Abb. 3
+ const tA=addMin(c.uhr,c.t),tS=c.uhr?addMin(c.uhr,c.t+10):'__:__';
+ it.push({t:'box',x:800,y:y(c.E),w:460,l:`*Ereigniseintritt|!„Person im Wasser“|${c.uhr||'__:__'} Uhr|Unfallstelle bei Rhein-km ${fk(c.E)}`},
+  {t:'box',x:800,y:y(c.A1),w:460,l:`*${tA} Uhr|Person jetzt ca. bei Rhein-km ${fk(c.A1)}`},
+  {t:'box',x:800,y:y(c.S1),w:460,l:`*${tS} Uhr|Startpunkt der Rettungsboote|Person jetzt ca. bei Rhein-km ${fk(c.S1)}`},
+  {t:'box',x:800,y:y(c.B1),w:460,l:`*Ende Beobachtungssektor|Rhein-km ${fk(c.B1)}`});
+ it.push({t:'sym',k:'p_verm',x:X0+120,y:y(c.E)-10,s:.9,r:0,l:'',m:'?'});
+ if(y(c.S1)-y(c.A1)>600)it.push({t:'line',k:'yarrow',pts:[[800,y(c.S1)-110],[800,y(c.A1)+330]],c:'k',l:'Suchrichtung'});
+ it.push({t:'line',k:'flowbig',pts:[[X1+930,y(top)+40],[X1+930,y(bot)-20]],c:'k',l:'Fließrichtung Rhein'});
  it.push(TA(X0-30,300,'rechtes Ufer (rechtsrheinisch)',1.1,'end'),TA(X1+30,300,'linkes Ufer (linksrheinisch)',1.1,'start'));
- it.push(TA(800,-170,'Wasserrettung Rhein – Sektoren nach AEP Braubach',1.9,'middle'),
-  TA(800,-110,`Ereignis Rhein-km ${fk(c.E)}${c.uhr?' um '+c.uhr+' Uhr':''} · Zeit seit Ereignis ${c.t} min · v = ${fk(c.v)} m/s`,1.15,'middle'),
-  TA(800,-60,'EL: FL LOR 1/11-1 (TBZ 235 HE, RP LOREL F2) · FEZ: FL LOR 200 (RP EMS)',.9,'middle'),
-  TA(800,-20,'EA 1 Wasser: TBZ 270 RP / UKW 10 · EA 2 Land re.: FL LAHN 1/11-1, RP LOREL F1 · EA 3 Land li.: FL REMO 11-1, RP REMOS F1',.9,'middle')
- );
+ const org=bb?BB.org:['Einsatzleitung, Abschnitte und Funk nach örtlichem AEP','Einsatzmittel-Zuordnung hinterlegt nur für AEP Braubach (Rhein-km 577,8–581,8)'];
+ it.push(TA(800,-60,'Wasserrettung Rhein – Sektoren nach AEP',1.9,'middle'),
+  TA(800,0,`Ereignis Rhein-km ${fk(c.E)}${c.uhr?' um '+c.uhr+' Uhr':''} · Zeit seit Ereignis ${c.t} min · v = ${fk(c.v)} m/s`,1.15,'middle'),
+  {...TA(800,50,liveShort(c.E),.9,'middle','b'),live:1,km:c.E},
+  TA(800,100,org[0],.9,'middle'),TA(800,135,org[1],.9,'middle'));
  return it}
 
 // Export
