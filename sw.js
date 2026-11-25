@@ -1,5 +1,5 @@
 // Offline-Cache für die Lagekarte. Bei Änderungen an den Dateien VERSION erhöhen.
-const VERSION = 'lagekarte-v13';
+const VERSION = 'lagekarte-v14';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-180.png', 'icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

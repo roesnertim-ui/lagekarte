@@ -161,7 +161,7 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
 <dialog id="dPal"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Zeichen wählen</h2><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
  <input id="palQ" type="search" placeholder="Suchen, z. B. verletzt, HLF, Gas" style="margin:8px 0"><div id="palL"></div></dialog>
 <dialog id="dNew"><form id="dNewF"><h2>Neues Blatt</h2>
- <label for="nsTpl">Vorlage</label><select id="nsTpl"><option value="leer" data-n="Lageplan">Lageplan (leer, mit Nordpfeil)</option><option value="grundriss" data-n="Grundriss EG">Grundriss (Draufsicht)</option><option value="schnitt" data-n="Schnitt">Gebäudeschnitt</option><option value="strasse" data-n="Unfallstelle">Straße (TH / VU)</option><option value="kreuzung" data-n="Kreuzung">Kreuzung (TH / VU)</option><option value="bahn" data-n="Bahnstrecke">Bahnstrecke (2 Gleise, Zug)</option><option value="rhein" data-n="Rhein">Fluss / Rhein (Wasserrettung)</option><option value="rheinbb" data-n="Wasserrettung Rhein">Wasserrettung Rhein (Rhein-Lahn-Kreis) – Sektoren nach AEP</option></select>
+ <label for="nsTpl">Vorlage</label><select id="nsTpl"><option value="leer" data-n="Lageplan">Lageplan (leer, mit Nordpfeil)</option><option value="grundriss" data-n="Grundriss EG">Grundriss (Draufsicht)</option><option value="schnittgr" data-n="Gebäude">Gebäude: Schnitt + Grundrisse je Geschoss</option><option value="schnitt" data-n="Schnitt">Gebäudeschnitt</option><option value="strasse" data-n="Unfallstelle">Straße (TH / VU)</option><option value="kreuzung" data-n="Kreuzung">Kreuzung (TH / VU)</option><option value="bahn" data-n="Bahnstrecke">Bahnstrecke (2 Gleise, Zug)</option><option value="rhein" data-n="Rhein">Fluss / Rhein (Wasserrettung)</option><option value="rheinbb" data-n="Wasserrettung Rhein">Wasserrettung Rhein (Rhein-Lahn-Kreis) – Sektoren nach AEP</option></select>
  <div id="nsRhein" hidden><div class="row"><div><label for="rhE">Ereignisort Rhein-km</label><input id="rhE" inputmode="decimal" placeholder="z. B. 577,8"></div><div><label for="rhU">Uhrzeit Ereignis (optional)</label><input id="rhU" type="time"></div></div>
   <div class="row"><div><label for="rhT">Zeit seit Ereignis bis Eintreffen 1. Einsatzmittel (min)</label><input id="rhT" inputmode="decimal" value="10"></div><div><label for="rhV">Fließgeschwindigkeit (m/s)</label><input id="rhV" inputmode="decimal" value="3,0"></div></div>
   <p class="hint">Ohne genaue Angaben nach AEP: 3,0 m/s und 10 min. Such- und Beobachtungssektor je 10 min Strecke.</p>
@@ -310,7 +310,7 @@ const VEH=['pkw','lkw','bus','krad','lok','wagen'];
 const isP=x=>x&&x.t==='sym'&&SYM[x.k]?.c==='Personen';
 function tgName(x){return x.t==='obj'?(x.l||OBJ[x.k][0]):x.l||''}
 function targets(list){return list.filter(x=>(x.t==='obj'&&VEH.includes(x.k))||((x.t==='room'||x.t==='zone')&&x.l))}
-function tgKind(x){return x.t==='obj'?'Fahrzeug':x.ghost?'Geschoss':x.t==='zone'?'Bereich':'Raum/Gebäude'}
+function tgKind(x){return x.t==='obj'?'Fahrzeug':x.ghost||x.floor?'Geschoss':x.t==='zone'?'Bereich':'Raum/Gebäude'}
 function inside(x,p){return x.t==='room'?p.x>=x.x&&p.x<=x.x+x.w&&p.y>=x.y&&p.y<=x.y+x.h:x.t==='zone'?Math.hypot(p.x-x.x,p.y-x.y)<=x.r:false}
 function tgCenter(x){return x.t==='room'?{x:x.x+x.w/2,y:x.y+x.h/2}:{x:x.x,y:x.y}}
 function autoAssign(it,list){if(!isP(it)||it.vt!==undefined||(it.v&&!it.va))return;const c=list.filter(x=>x.t==='room'&&x.l&&inside(x,it)).sort((a,b)=>a.w*a.h-b.w*b.h)[0];
@@ -342,7 +342,7 @@ const pds=p=>{if(p.length<3)return pd(p);let d='M'+r1(p[0][0])+','+r1(p[0][1]);f
 function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0}) scale(${it.s||1})`;
  switch(it.t){
  case 'wall':s=`<line x1="${it.x1}" y1="${it.y1}" x2="${it.x2}" y2="${it.y2}" stroke="#1b1f23" stroke-width="${it.w}" stroke-linecap="square"/>`;break;
- case 'room':if(it.ghost){s=`<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="none" stroke="none"/>`;break}s=`<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="#fff" fill-opacity=".01" stroke="#1b1f23" stroke-width="${it.sw||6}"/>`+halo(it.x+it.w/2,it.y+it.h/2+9,it.l,26);break;
+ case 'room':if(it.ghost){s=`<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="none" stroke="none"/>`;break}s=`<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="#fff" fill-opacity=".01" stroke="#1b1f23" stroke-width="${it.sw||6}"/>`+(it.lp==='top'?halo(it.x+14,it.y+36,it.lt||it.l,26,'#1b1f23','start'):halo(it.x+it.w/2,it.y+it.h/2+9,it.l,26));break;
  case 'door':s=`<g transform="${tf} scale(1,${it.f||1})"><line x1="2" y1="0" x2="38" y2="0" stroke="#fff" stroke-width="14"/><path d="M0,0 L0,-40 M0,-40 A40,40 0 0,1 40,0" fill="#fff" fill-opacity=".01" stroke="#1b1f23" stroke-width="2.5"/></g>`;break;
  case 'win':s=`<g transform="${tf}"><rect x="0" y="-6" width="60" height="12" fill="#fff" stroke="#1b1f23" stroke-width="2"/><line x1="0" y1="0" x2="60" y2="0" stroke="#1b1f23" stroke-width="2"/></g>`;break;
  case 'stair':s=`<g transform="${tf}"><rect x="0" y="0" width="80" height="160" fill="#fff" stroke="#1b1f23" stroke-width="3"/>${[1,2,3,4,5,6,7,8,9].map(k=>`<line x1="0" y1="${k*16}" x2="80" y2="${k*16}" stroke="#1b1f23" stroke-width="1.5"/>`).join('')}<path d="M40,150 L40,18" stroke="#111" stroke-width="3" marker-end="url(#m-k)"/></g>`;break;
@@ -370,7 +370,7 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
  case 'text':s=`<g transform="${tf}">${halo(0,0,it.l||' ',26,PEN[it.c]||'#111',it.a||'start')}</g>`;break;
  case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);const V=S.c==='Personen'&&it.v?(L||items()).find(x=>x.id===it.v):null,VC=V&&!inside(V,it)?tgCenter(V):null;
   if(VC)s=`<line x1="${r1(it.x)}" y1="${r1(it.y)}" x2="${r1(VC.x)}" y2="${r1(VC.y)}" stroke="#444" stroke-width="2.5" stroke-dasharray="8 6" pointer-events="none"/><circle cx="${r1(VC.x)}" cy="${r1(VC.y)}" r="5" fill="#444" pointer-events="none"/>`;
-  s+=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,[it.l,V&&!V.ghost?'→ '+tgName(V):it.vt?'→ '+it.vt:''].filter(Boolean).join(' '),22);break}
+  s+=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,[it.l,V&&!V.ghost&&!V.floor?'→ '+tgName(V):it.vt?'→ '+it.vt:''].filter(Boolean).join(' '),22);break}
  case 'obj':{const O=OBJ[it.k];if(!O)break;s=`<g transform="${tf}">${O[1]}</g>`+halo(it.x,it.y+(it.k==='hyd'?44:it.k==='pkw'||it.k==='krad'?60:72)*(it.s||1),it.l,20);break}
  case 'img':s=`<image href="${it.src}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" opacity="${it.op||.8}" preserveAspectRatio="none"/>`;break}
  return `<g data-i="${i}"${it.lock?' pointer-events="none"':''}>${s}${phBadge(it)}</g>`}
@@ -524,7 +524,7 @@ function renderSheets(){const l=sheets();if(shIdx>=l.length)shIdx=0;$('mSheet').
 function openSheet(i){shIdx=i;if(op())op().si=i;sel=-1;const s=sh();vb=s&&s.vb?{...s.vb}:{x:0,y:0,w:1600,h:1000};renderSheets();render();if(s&&!s.vb&&s.items.length)requestAnimationFrame(fit)}
 $('mSheet').onchange=()=>openSheet(+$('mSheet').value);
 $('mNew').onclick=()=>{if(!need())return;$('nsName').value='';$('nsTpl').value='leer';$('nsSchnitt').hidden=true;$('dNew').showModal()};
-$('nsTpl').onchange=()=>{$('nsSchnitt').hidden=$('nsTpl').value!=='schnitt';$('nsRhein').hidden=$('nsTpl').value!=='rheinbb';if(!$('nsRhein').hidden){rhPrev();liveShow();if(navigator.onLine!==false)liveRefresh()}if(!$('nsName').value||$('nsName').dataset.auto){$('nsName').value=$('nsTpl').selectedOptions[0].dataset.n;$('nsName').dataset.auto=1}};
+$('nsTpl').onchange=()=>{$('nsSchnitt').hidden=!['schnitt','schnittgr'].includes($('nsTpl').value);$('nsRhein').hidden=$('nsTpl').value!=='rheinbb';if(!$('nsRhein').hidden){rhPrev();liveShow();if(navigator.onLine!==false)liveRefresh()}if(!$('nsName').value||$('nsName').dataset.auto){$('nsName').value=$('nsTpl').selectedOptions[0].dataset.n;$('nsName').dataset.auto=1}};
 $('nsName').oninput=()=>delete $('nsName').dataset.auto;
 $('dNewF').onsubmit=e=>{e.preventDefault();const t=$('nsTpl').value;const items=TPL[t]();if(!items)return;const s={id:uid(),name:$('nsName').value.trim()||$('nsTpl').selectedOptions[0].dataset.n,items};sheets().push(s);undo=[];save();$('dNew').close();openSheet(sheets().length-1);requestAnimationFrame(fit)};
 $('dNewC').onclick=()=>$('dNew').close();
@@ -556,6 +556,14 @@ const TPL={
   for(let k=kel?-1:0;k<n;k++){const yb=gy-k*H,yt=yb-H;it.push(LN('free',[[x0+20,yb-8],[x0+160,yt+12]]));it.push(TX(x1+30,yb-H/2+9,k<0?'KG':k===0?'EG':k+'. OG'))}
   it.push(TX(x0+30,bot+40,'TR',.8));
   if(dach==='sattel'){it.push(W_(x0-30,top+20,(x0+x1)/2,top-220,10),W_((x0+x1)/2,top-220,x1+30,top+20,10),TX(x1+30,top-60,'DG'))}else{it.push(W_(x0,top,x0,top-30,10),W_(x1,top,x1,top-30,10))}
+  return it},
+ schnittgr:()=>{const it=TPL.schnitt(),n=Math.max(1,Math.min(12,+$('nsN').value||2)),kel=$('nsK').checked,dach=$('nsD').value;
+  const fl=[];if(dach==='sattel')fl.push('DG');for(let k=n-1;k>=0;k--)fl.push(k===0?'EG':k+'. OG');if(kel)fl.push('KG');
+  const PW=520,PH=340,GX=1650,GY=40,DX=PW+80,DY=PH+90,cols=fl.length>4?2:1;
+  it.push(TX(GX,GY-50,'Grundrisse je Geschoss',1.1));
+  fl.forEach((name,i)=>{const x=GX+(i%cols)*DX,y=GY+Math.floor(i/cols)*DY;
+   it.push({t:'room',x,y,w:PW,h:PH,l:name,lt:'Grundriss '+name,lp:'top',sw:10,floor:1,id:uid()},{t:'room',x,y:y+PH-180,w:150,h:180,l:'TR '+name,lt:'TR',lp:'top',sw:6},{t:'stair',x:x+46,y:y+PH-130,r:0,s:.72});
+   if(name==='EG')it.push({t:'door',x:x+200,y:y+PH,r:0,s:1,f:1},TX(x+190,y+PH+40,'Zugang',.8))});
   return it},
  strasse:()=>[LN('edge',[[0,360],[1600,360]]),LN('edge',[[0,640],[1600,640]]),LN('center',[[0,500],[1600,500]]),TX(30,330,'Straße / km',.9),{t:'obj',k:'nord',x:1500,y:120,s:1,r:0,l:''}],
  bahn:()=>[LN('rail',[[0,420],[2600,420]]),LN('rail',[[0,580],[2600,580]]),TX(30,350,'Gleis 1',.9),TX(30,680,'Gleis 2',.9),
@@ -790,7 +798,8 @@ $('docExp').onclick=async()=>{const photos={};for(const d of Object.values(db.do
 $('docImp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const d=JSON.parse(await f.text());if(!d.docs)throw 0;let n=0;for(const k in d.docs){if(!db.docs[k]||confirm('Lage „'+(d.docs[k].name||k)+'“ existiert bereits. Überschreiben?')){db.docs[k]=d.docs[k];n++}}for(const [id,u] of Object.entries(d.photos||{})){try{await PDB.put(id,await (await fetch(u)).blob())}catch(x){}}save();renderDocs();toast(n+' Lagen importiert')}catch(x){toast('Datei ist keine gültige Sicherung')}};
 function vehList(m){const P=m.items.filter(isP);if(!P.length||!P.some(p=>p.v||p.vt))return'';const T=targets(m.items);
  const pd=p=>esc(SYM[p.k].n+(p.n?' ×'+p.n:'')+(p.m?' '+p.m:'')+(p.l?' – '+p.l:''));const used=new Set();
- const rows=T.map(x=>{const ps=P.filter(p=>p.v&&p.v===x.id);ps.forEach(p=>used.add(p));return ps.length||x.t==='obj'?`<tr><td>${esc(tgName(x))}</td><td>${esc(tgKind(x))}</td><td>${ps.length?ps.map(pd).join('<br>'):'–'}</td></tr>`:''}).join('');
+ const grp=new Map();for(const x of T){const k=tgKind(x)+'|'+tgName(x);if(!grp.has(k))grp.set(k,[]);grp.get(k).push(x)}
+ const rows=[...grp.values()].map(xs=>{const x=xs[0],ps=P.filter(p=>p.v&&xs.some(y=>y.id===p.v));ps.forEach(p=>used.add(p));return ps.length||x.t==='obj'?`<tr><td>${esc(tgName(x))}</td><td>${esc(tgKind(x))}</td><td>${ps.length?ps.map(pd).join('<br>'):'–'}</td></tr>`:''}).join('');
  const ft={};P.filter(p=>!used.has(p)&&p.vt).forEach(p=>{(ft[p.vt]=ft[p.vt]||[]).push(p);used.add(p)});
  const rest=P.filter(p=>!used.has(p));
  return `<h2>Zuordnung Personen</h2><table><tr><th>Ort / Fahrzeug</th><th>Art</th><th>Personen</th></tr>${rows}${Object.entries(ft).map(([k,ps])=>`<tr><td>${esc(k)}</td><td>Freitext</td><td>${ps.map(pd).join('<br>')}</td></tr>`).join('')}${rest.length?`<tr><td>ohne Zuordnung</td><td></td><td>${rest.map(pd).join('<br>')}</td></tr>`:''}</table>`}
