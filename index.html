@@ -103,6 +103,9 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 #toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;display:grid;gap:6px;pointer-events:none}
 #toast div{background:#16191c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 #print .sheet:first-child{break-before:auto}
+.phgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin:10px 0}.phc{display:grid;gap:4px}.phimg{padding:0;overflow:hidden;height:130px;background:#000}.phimg img{width:100%;height:100%;object-fit:cover;display:block}.phc input{min-height:36px}
+#dPhoto{width:min(860px,96vw)}#dScan{width:min(640px,96vw)}
+#print .phprint{display:grid;grid-template-columns:1fr 1fr;gap:8pt}#print figure{margin:0;break-inside:avoid}#print figure img{width:100%;max-height:85mm;object-fit:contain;border:1px solid #888}#print figcaption{font-size:8.5pt}
 .tabs{display:inline-flex;gap:4px;flex:0 0 auto}.tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 #s-pers.on{display:block;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 2px 24px}
 .pbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
@@ -182,6 +185,13 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
  <p class="hint">Taktische Zeichen nach dem freien Zeichensatz „Taktische-Zeichen“ von Jonas Köritz (CC BY 4.0), angelehnt an die DV 102. Fahrzeuge, Grundriss- und Schnittelemente sind eigene Darstellungen. Raster 1 m (fein) / 5 m (grob) dient der Orientierung, Skizzen sind nicht maßstäblich.</p></dialog>
 <dialog id="dImg"><h2>Blatt als Bild</h2><img id="dImgI" alt="Vorschau des Blatts"><p class="hint">„Teilen“ öffnet das iPad-Menü: In Dateien sichern, Bild sichern, AirDrop, Mail. Alternativ das Bild lange drücken.</p>
  <div class="row"><button class="pri" id="dImgS">Teilen / Sichern</button><button class="ghost fix" onclick="this.closest('dialog').close()">Schließen</button></div></dialog>
+<dialog id="dPhoto"><div class="row" style="align-items:center"><h2 id="phTitle" style="margin:0;flex:1 1 auto"></h2><label class="btn pri" style="margin:0;display:flex;align-items:center;color:#fff;background:var(--red);border-color:var(--red)">Foto hinzufügen<input id="phAdd" type="file" accept="image/*" multiple hidden></label><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
+ <div id="phGrid" class="phgrid"></div><div id="phBig" hidden><img id="phBigI" alt="Foto" style="width:100%;max-height:68vh;object-fit:contain;background:#000;border-radius:8px"><p id="phBigC"></p><button class="sm" id="phBack">Zurück zur Übersicht</button></div>
+ <p class="hint">Fotos bleiben nur auf diesem Gerät (verkleinert gespeichert) und werden mit der Lage gedruckt und gesichert.</p></dialog>
+<dialog id="dScan"><h2>Ausweis scannen</h2><p id="scanState" class="hint"></p><div id="scanRes" class="pgrid"></div>
+ <p class="hint">Rückseite des Personalausweises fotografieren: gerade, formatfüllend, ohne Spiegelung. Die Auswertung läuft nur auf diesem Gerät, das Foto wird nicht gespeichert. Nur mit Einverständnis der Person verwenden.</p>
+ <div class="row" style="margin-top:8px"><button class="pri" id="scanOk" disabled>Übernehmen</button><button class="ghost fix" onclick="this.closest('dialog').close()">Abbrechen</button></div></dialog>
+<input id="scanFile" type="file" accept="image/*" capture="environment" hidden>
 <div id="toast" aria-live="polite"></div>
 <script>
 {
@@ -362,7 +372,7 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
   s+=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,[it.l,V&&!V.ghost?'→ '+tgName(V):it.vt?'→ '+it.vt:''].filter(Boolean).join(' '),22);break}
  case 'obj':{const O=OBJ[it.k];if(!O)break;s=`<g transform="${tf}">${O[1]}</g>`+halo(it.x,it.y+(it.k==='hyd'?44:it.k==='pkw'||it.k==='krad'?60:72)*(it.s||1),it.l,20);break}
  case 'img':s=`<image href="${it.src}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" opacity="${it.op||.8}" preserveAspectRatio="none"/>`;break}
- return `<g data-i="${i}"${it.lock?' pointer-events="none"':''}>${s}</g>`}
+ return `<g data-i="${i}"${it.lock?' pointer-events="none"':''}>${s}${phBadge(it)}</g>`}
 function itemsSVG(list){return list.map((it,i)=>rItem(it,i,list)).join('')}
 function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(vb.y)} ${r1(vb.w)} ${r1(vb.h)}`);
  if(!s){map.innerHTML='';return}
@@ -386,6 +396,7 @@ function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.in
  +(it.t==='door'?'<button class="sm" data-a="flip">Aufschlag wechseln</button>':'')
  +(STRK.includes(it.t)?'<button class="sm" data-a="w-">Dünner</button><button class="sm" data-a="w+">Dicker</button>':'')
  +(it.t==='text'||(it.t==='line'&&['arrow','free'].includes(it.k))?Object.keys(PEN).map(k=>`<button class="sm dot" data-a="c-${k}" style="background:${PEN[k]}" aria-label="Farbe"></button>`).join(''):'')
+ +(PHOK.includes(it.t)?`<button class="sm" data-a="ph">Fotos${it.ph&&it.ph.length?' ('+it.ph.length+')':''}</button>`:'')
  +'<button class="sm" data-a="dup">Duplizieren</button><button class="sm" data-a="lock">Fixieren</button><button class="sm del" data-a="del">Löschen</button>';
  const PV=$('pV');if(PV)PV.onchange=()=>{snap();delete it.va;if(PV.value==='txt'){delete it.v;it.vt=it.vt||'';save();renderProps();$('pVt')?.focus();return}delete it.vt;const V=targets(s.items)[+PV.value];if(V){if(!V.id)V.id=uid();it.v=V.id}else delete it.v;save();renderMap();renderProps()};
  const PVt=$('pVt');if(PVt){PVt.oninput=()=>{it.vt=PVt.value;renderMap();saveSoon()}}
@@ -496,6 +507,7 @@ $('props').onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a,s=sh(),it
  if(a.startsWith('c-'))it.c=a.slice(2);
  if(a==='n+')it.n=Math.min(999,(+it.n||0)+1);if(a==='n-')it.n=Math.max(0,(+it.n||0)-1);
  if(a==='m0')delete it.m;if(a==='m?')it.m='?';if(a==='m!')it.m='!';
+ if(a==='ph'){undo.pop();phOpen(it);return}
  if(a==='dup'){const c=JSON.parse(JSON.stringify(it));if(c.id)c.id=uid();if(c.t==='obj'&&VEH.includes(c.k)){const n=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k)).length;c.l='Fzg '+String.fromCharCode(65+n%26)}shift(c,JSON.parse(JSON.stringify(it)),40,40);s.items.push(c);sel=s.items.length-1}
  if(a==='lock'){it.lock=1;sel=-1;toast('Fixiert. Lösen über „Blatt …“')}
  if(a==='del'){s.items.splice(sel,1);sel=-1}
@@ -659,7 +671,7 @@ function targetAt(p){const c=[];for(const x of items()){
 // ===== Reiter Personen =====
 const SKS=[['','–'],['I','SK I (rot)'],['II','SK II (gelb)'],['III','SK III (grün)'],['IV','SK IV (blau)'],['ex','tot']];
 const SKC={I:'#d00000',II:'#e0b000',III:'#1d8a3a',IV:'#1d5fbf',ex:'#111'};
-const PF=[['nach','Nachname'],['vor','Vorname'],['geb','Geburtsdatum'],['str','Straße, Hausnr.'],['plz','PLZ'],['ort2','Wohnort'],['tel','Telefon'],['verl','Verletzungen / Zustand'],['trans','Transport / Verbleib'],['bem','Bemerkung']];
+const PF=[['nach','Nachname'],['vor','Vorname'],['geb','Geburtsdatum'],['str','Straße, Hausnr.'],['plz','PLZ'],['ort2','Wohnort'],['tel','Telefon'],['trans','Transport / Verbleib'],['bem','Bemerkung']];
 function migRec(r){if(r.name!==undefined&&r.nach===undefined&&r.vor===undefined){const[a,b]=String(r.name).split(',');r.nach=(a||'').trim();r.vor=(b||'').trim()}delete r.name;if(r.adr!==undefined&&r.str===undefined)r.str=r.adr;delete r.adr;return r}
 const adrOf=r=>[r.str,[r.plz,r.ort2].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 const fmtGeb=v=>{const d=v.replace(/\D/g,'');return d.length===8&&!/\./.test(v)?d.slice(0,2)+'.'+d.slice(2,4)+'.'+d.slice(4):v};
@@ -670,7 +682,7 @@ function recOf(ref){const o=op(),a=ref.split(':');if(a[0]==='x')return o.extra[+
 function renderPers(){const R=persRows(),f=$('pFlt').value;$('tabPersN').textContent=R.length?` (${R.length})`:'';
  const L=R.filter(r=>!f||(f==='sk'?r.rec.sk:r.art.toLowerCase().includes(f)));
  $('persList').innerHTML=L.length?L.map(r=>`<div class="pcard" style="border-left-color:${SKC[r.rec.sk]||'var(--line)'}"><div class="phead"><img src="${r.uri}" alt=""><div><b>${esc(r.art)}${r.st?' '+esc(r.st):''}${r.n>1?` – Nr. ${r.k+1} von ${r.n}`:''}</b><div class="hint">${esc([r.sheet&&'Blatt '+r.sheet,r.ort&&'Ort: '+r.ort,r.lbl].filter(Boolean).join(' · ')||'–')}</div></div>
-  ${r.extra?`<button class="sm ghost del" data-xdel="${r.j}">Entfernen</button>`:`<button class="sm" data-go="${r.mi}:${r.ii}">Auf Karte</button>`}</div>
+  <button class="sm" data-scan="${r.ref}">Ausweis scannen</button>${r.extra?`<button class="sm ghost del" data-xdel="${r.j}">Entfernen</button>`:`<button class="sm" data-go="${r.mi}:${r.ii}">Auf Karte</button>`}</div>
   <div class="pgrid">${PF.map(([k,n])=>`<label>${n}<input data-ref="${r.ref}" data-f="${k}" value="${esc(r.rec[k]||'')}"${k==='geb'?' inputmode="numeric" placeholder="TT.MM.JJJJ"':k==='tel'?' inputmode="tel"':k==='plz'?' inputmode="numeric" maxlength="5"':''}${k==='nach'||k==='vor'||k==='ort2'?' autocapitalize="words"':''}></label>`).join('')}
   <label>Sichtung<select data-ref="${r.ref}" data-f="sk">${SKS.map(([v,n])=>`<option value="${v}"${(r.rec.sk||'')===v?' selected':''}>${n}</option>`).join('')}</select></label>${r.extra?`<label>Aufenthaltsort<input data-ref="${r.ref}" data-f="ort" value="${esc(r.rec.ort||'')}" placeholder="z. B. Betreuungsstelle"></label>`:''}</div></div>`).join('')
   :'<p class="empty">Noch keine Personen. Personenzeichen auf der Karte setzen oder „+ Person ohne Zeichen“.</p>'}
@@ -684,12 +696,71 @@ $('persAdd').onclick=()=>{need();op().extra=op().extra||[];op().extra.push({art:
 $('persPrint').onclick=()=>{const o=op(),R=persRows();if(!R.length)return toast('Keine Personen erfasst');
  const td=v=>`<td>${esc(v||'')}</td>`;
  $('print').innerHTML=`<h1>${esc(o.name)} – Personenliste</h1><p style="margin:0 0 6pt">Stand ${dt(new Date())} · enthält personenbezogene Daten – nur für den Dienstgebrauch</p>
- <table style="font-size:8.5pt"><tr><th>Nr.</th><th>Art / Status</th><th>Ort / Fahrzeug</th><th>Nachname</th><th>Vorname</th><th>Geb.</th><th>Anschrift</th><th>Telefon</th><th>Sichtung</th><th>Verletzungen / Zustand</th><th>Transport / Verbleib</th><th>Bemerkung</th></tr>
- ${R.map((r,i)=>`<tr><td>${i+1}</td>${td(r.art+(r.st?' '+r.st:'')+(r.lbl?' – '+r.lbl:''))}${td(r.ort)}${td(r.rec.nach)}${td(r.rec.vor)}${td(r.rec.geb)}${td(adrOf(r.rec))}${td(r.rec.tel)}${td((SKS.find(s=>s[0]===(r.rec.sk||''))||['',''])[1].replace('–',''))}${td(r.rec.verl)}${td(r.rec.trans)}${td(r.rec.bem)}</tr>`).join('')}</table>`;
+ <table style="font-size:8.5pt"><tr><th>Nr.</th><th>Art / Status</th><th>Ort / Fahrzeug</th><th>Nachname</th><th>Vorname</th><th>Geb.</th><th>Anschrift</th><th>Telefon</th><th>Sichtung</th><th>Transport / Verbleib</th><th>Bemerkung</th></tr>
+ ${R.map((r,i)=>`<tr><td>${i+1}</td>${td(r.art+(r.st?' '+r.st:'')+(r.lbl?' – '+r.lbl:''))}${td(r.ort)}${td(r.rec.nach)}${td(r.rec.vor)}${td(r.rec.geb)}${td(adrOf(r.rec))}${td(r.rec.tel)}${td((SKS.find(s=>s[0]===(r.rec.sk||''))||['',''])[1].replace('–',''))}${td(r.rec.trans)}${td(r.rec.bem)}</tr>`).join('')}</table>`;
  setTimeout(()=>window.print(),50)};
 function showTab(t){$('s-map').classList.toggle('on',t==='map');$('s-pers').classList.toggle('on',t==='pers');$('tabMap').classList.toggle('on',t==='map');$('tabPers').classList.toggle('on',t==='pers');
  if(t==='pers')renderPers();else{render()}}
 $('tabMap').onclick=()=>showTab('map');$('tabPers').onclick=()=>showTab('pers');
+
+// ===== Fotos (IndexedDB) =====
+const PDB={_db:null,open(){return this._db||(this._db=new Promise((ok,no)=>{const r=indexedDB.open('lagekarte-fotos',1);r.onupgradeneeded=()=>r.result.createObjectStore('ph');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))},
+ async tx(mode,fn){const db=await this.open();return new Promise((ok,no)=>{const t=db.transaction('ph',mode),s=t.objectStore('ph');const r=fn(s);t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>no(t.error)})},
+ put(id,b){return this.tx('readwrite',s=>s.put(b,id))},get(id){return this.tx('readonly',s=>s.get(id))},del(id){return this.tx('readwrite',s=>s.delete(id))},keys(){return this.tx('readonly',s=>s.getAllKeys())}};
+const PHOK=['obj','room','zone','sym','box','text'];
+function phBadge(it){const n=it.ph&&it.ph.length;if(!n)return'';let bx=it.x,by=it.y-30;
+ if(it.t==='sym'){const z=110*(it.s||1);bx=it.x+z*.45;by=it.y-z*.45}else if(it.t==='obj'&&VDIM[it.k]){bx=it.x+VDIM[it.k][0]*(it.s||1);by=it.y-VDIM[it.k][1]*(it.s||1)}else if(it.t==='room'){bx=it.x+it.w-18;by=it.y+18}else if(it.t==='zone'){bx=it.x+it.r*.7;by=it.y-it.r*.7}
+ return `<g transform="translate(${r1(bx)},${r1(by)})" pointer-events="none"><circle r="17" fill="#1d5fbf" stroke="#fff" stroke-width="3"/><path d="M-9,-4h4l2,-3h6l2,3h4v11h-18z" fill="#fff"/><circle r="3.5" cy="1.5" fill="#1d5fbf"/><text x="14" y="-12" font-size="14" font-family="Arial" font-weight="bold" fill="#1d5fbf" stroke="#fff" stroke-width="3" paint-order="stroke">${n}</text></g>`}
+async function imgToJpeg(file,max=1600,q=.75){const u=URL.createObjectURL(file);try{const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=u});const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return await new Promise(ok=>c.toBlob(ok,'image/jpeg',q))}finally{URL.revokeObjectURL(u)}}
+let phIt=null,phUrls=[];
+function phName(it){return it.t==='sym'?SYM[it.k].n:it.t==='obj'?(it.l||OBJ[it.k][0]):it.l||({room:'Raum',zone:'Bereich',box:'Infokasten',text:'Text'}[it.t])}
+async function phOpen(it){phIt=it;$('phTitle').textContent='Fotos – '+phName(it);$('phBig').hidden=true;$('phGrid').hidden=false;await phRender();$('dPhoto').showModal()}
+async function phRender(){phUrls.forEach(URL.revokeObjectURL);phUrls=[];const L=phIt.ph||[];const parts=[];
+ for(const [j,p] of L.entries()){let u='';try{const b=await PDB.get(p.id);if(b){u=URL.createObjectURL(b);phUrls.push(u)}}catch(e){}
+  parts.push(`<div class="phc"><button class="phimg" data-big="${j}">${u?`<img src="${u}" alt="Foto ${j+1}">`:'<span class="hint">fehlt</span>'}</button><div class="hint">${tStr(p.t)}</div><input data-cap="${j}" value="${esc(p.cap||'')}" placeholder="Bildunterschrift"><button class="sm ghost del" data-pdel="${j}">Löschen</button></div>`)}
+ $('phGrid').innerHTML=parts.join('')||'<p class="empty">Noch keine Fotos.</p>'}
+$('phAdd').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(!fs.length||!phIt)return;snap();phIt.ph=phIt.ph||[];
+ for(const f of fs){try{const b=await imgToJpeg(f);const id='ph_'+uid();await PDB.put(id,b);phIt.ph.push({id,t:Date.now(),cap:''})}catch(x){toast('Foto konnte nicht gespeichert werden')}}
+ save();renderMap();renderProps();phRender()};
+$('phGrid').oninput=e=>{const j=e.target.dataset.cap;if(j!==undefined){phIt.ph[+j].cap=e.target.value;saveSoon()}};
+$('phGrid').onclick=async e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.pdel!==undefined&&confirm('Foto löschen?')){snap();phIt.ph.splice(+b.dataset.pdel,1);save();renderMap();renderProps();phRender()}
+ if(b.dataset.big!==undefined){const img=b.querySelector('img');if(!img)return;$('phBigI').src=img.src;$('phBigC').textContent=phIt.ph[+b.dataset.big].cap||'';$('phBig').hidden=false;$('phGrid').hidden=true}};
+$('phBack').onclick=()=>{$('phBig').hidden=true;$('phGrid').hidden=false};
+$('dPhoto').onclose=()=>{phUrls.forEach(URL.revokeObjectURL);phUrls=[]};
+async function phGc(){try{const used=new Set();for(const d of Object.values(db.docs))for(const m of d.maps||[])for(const x of m.items)(x.ph||[]).forEach(p=>used.add(p.id));for(const k of await PDB.keys())if(!used.has(k))await PDB.del(k)}catch(e){}}
+async function blobToDataURL(b){return new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(b)})}
+async function phPrintHtml(o){const out=[];for(const m of o.maps||[]){const L=m.items.filter(x=>x.ph&&x.ph.length);if(!L.length)continue;const cells=[];
+  for(const x of L)for(const p of x.ph){const b=await PDB.get(p.id).catch(()=>null);if(!b)continue;cells.push(`<figure><img src="${await blobToDataURL(b)}"><figcaption><b>${esc(phName(x))}</b> · ${tStr(p.t)}${p.cap?' · '+esc(p.cap):''}</figcaption></figure>`)}
+  if(cells.length)out.push(`<div class="sheet"><h1>${esc(o.name)} – Fotos ${esc(m.name)}</h1><div class="phprint">${cells.join('')}</div></div>`)}return out.join('')}
+
+// ===== Ausweis scannen (Texterkennung auf dem Gerät) =====
+function mrzCheck(s){const w=[7,3,1];let t=0;for(let i=0;i<s.length;i++){const c=s[i];const v=c==='<'?0:/[0-9]/.test(c)?+c:c.charCodeAt(0)-55;t+=v*w[i%3]}return t%10}
+function capW(s){return s.toLowerCase().replace(/(^|[\s\-/(])([a-zäöüß])/g,(a,b,c)=>b+c.toUpperCase()).replace(/strasse\b/gi,'straße')}
+function mrzParse(raw){const lines=raw.toUpperCase().replace(/[«‹]/g,'<<').replace(/[ \t]/g,'').split(/\n+/).map(l=>l.replace(/[^A-Z0-9<]/g,'')).filter(Boolean);const r={};
+ const dig=s=>s.replace(/O/g,'0').replace(/[IL]/g,'1').replace(/S/g,'5').replace(/B/g,'8').replace(/Z/g,'2');const cy=new Date().getFullYear()%100;
+ for(const l of lines){const m=dig(l).match(/^(\d{6})(\d)[MF<]/);if(m&&mrzCheck(m[1])===+m[2]){const yy=+m[1].slice(0,2);r.geb=`${m[1].slice(4,6)}.${m[1].slice(2,4)}.${(yy>cy?1900:2000)+yy}`;break}}
+ for(const l of lines){if(/^I[D1][A-Z<]/.test(l))continue;const m=l.match(/^([A-Z<]+?)<<([A-Z<]+?)<*$/);if(m&&l.length>=15){const nn=m[1].replace(/</g,' ').trim(),vn=m[2].replace(/<+/g,' ').trim();if(nn.length>1&&vn.length>1){r.nach=capW(nn);r.vor=capW(vn);break}}}
+ return r}
+function adrParse(raw){const L=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean),r={};
+ for(let i=0;i<L.length;i++){const m=L[i].match(/(?:^|\s)(\d{5})\s+([A-ZÄÖÜa-zäöüß][A-ZÄÖÜa-zäöüß .\-/()]+)$/);if(m&&!/</.test(L[i])){r.plz=m[1];r.ort2=capW(m[2].trim());
+  const c=[L[i+1],L[i-1]].filter(Boolean).find(s=>/[A-ZÄÖÜa-zäöüß]{3,}.*\d/.test(s)&&!/</.test(s)&&!/\d{5}/.test(s));if(c)r.str=capW(c.replace(/^[^A-ZÄÖÜa-zäöü]+/,'').trim());break}}return r}
+let tessP=null;function loadTess(){return tessP||(tessP=new Promise((ok,no)=>{if(window.Tesseract)return ok(window.Tesseract);const s=document.createElement('script');s.src='ocr/tesseract.min.js';s.onload=()=>ok(window.Tesseract);s.onerror=()=>{tessP=null;no(new Error('Texterkennung konnte nicht geladen werden'))};document.head.append(s)}))}
+async function ocrId(file,step){const T=await loadTess();const img=await imgToJpeg(file,2000,.9);const opt=l=>({workerPath:'ocr/worker.min.js',corePath:'ocr/',langPath:'ocr/lang',gzip:true,workerBlobURL:false});
+ step('Maschinenlesbare Zone wird gelesen …');let w=await T.createWorker('eng',1,opt());await w.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',tessedit_pageseg_mode:'6'});
+ const a=(await w.recognize(img,{rotateAuto:true})).data.text;await w.terminate();
+ step('Anschrift wird gelesen …');w=await T.createWorker('deu',1,opt());const b=(await w.recognize(img,{rotateAuto:true})).data.text;await w.terminate();
+ return {...adrParse(b),...mrzParse(a),raw:a+'\n---\n'+b}}
+const SCF=[['nach','Nachname'],['vor','Vorname'],['geb','Geburtsdatum'],['str','Straße, Hausnr.'],['plz','PLZ'],['ort2','Wohnort']];
+let scanRef=null;
+$('persList').addEventListener('click',e=>{const b=e.target.closest('[data-scan]');if(!b)return;scanRef=b.dataset.scan;$('scanFile').click()});
+$('scanFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!scanRef)return;
+ $('scanRes').innerHTML='';$('scanOk').disabled=true;$('scanState').textContent='Texterkennung wird vorbereitet … (beim ersten Mal werden ca. 8 MB geladen)';$('dScan').showModal();
+ try{const r=await ocrId(f,t=>$('scanState').textContent=t);const n=SCF.filter(([k])=>r[k]).length;
+  $('scanState').textContent=n?`${n} von 6 Feldern erkannt – bitte prüfen und korrigieren.`:'Nichts erkannt. Rückseite gerade, formatfüllend und ohne Spiegelung fotografieren.';
+  $('scanRes').innerHTML=SCF.map(([k,l])=>`<label>${l}<input data-sf="${k}" value="${esc(r[k]||'')}"></label>`).join('')+`<details><summary class="hint">Erkannter Rohtext</summary><pre style="white-space:pre-wrap;font-size:12px">${esc(r.raw)}</pre></details>`;$('scanOk').disabled=false}
+ catch(x){$('scanState').textContent='Fehler: '+(x.message||x)+'. Beim ersten Scan wird eine Internetverbindung benötigt.'}};
+$('scanOk').onclick=()=>{const rec=recOf(scanRef);$('scanRes').querySelectorAll('[data-sf]').forEach(i=>{if(i.value.trim())rec[i.dataset.sf]=i.value.trim()});save();$('dScan').close();renderPers();toast('Daten übernommen')};
 
 // Export
 function sheetSVG(s,px){const b=bbox(s.items),pad=40,x=b.x-pad,y=b.y-pad,w=Math.max(b.width+2*pad,200),h=Math.max(b.height+2*pad,150);
@@ -710,17 +781,19 @@ $('docMenu').onclick=()=>{renderDocs();$('dDocs').showModal()};
 $('docs').onclick=e=>{const t=e.target;if(t.dataset.op){$('dDocs').close();openDoc(t.dataset.op)}
  if(t.dataset.rm&&confirm('Lage mit allen Blättern endgültig löschen?')){delete db.docs[t.dataset.rm];if(db.cur===t.dataset.rm){db.cur=null;save();openDoc(newDoc().id)}save();renderDocs()}};
 $('docNew').onclick=()=>{$('dDocs').close();openDoc(newDoc().id);$('docName').select()};
-$('docExp').onclick=()=>dl('Lagekarte_Sicherung_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(db),'application/json');
-$('docImp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const d=JSON.parse(await f.text());if(!d.docs)throw 0;let n=0;for(const k in d.docs){if(!db.docs[k]||confirm('Lage „'+(d.docs[k].name||k)+'“ existiert bereits. Überschreiben?')){db.docs[k]=d.docs[k];n++}}save();renderDocs();toast(n+' Lagen importiert')}catch(x){toast('Datei ist keine gültige Sicherung')}};
+$('docExp').onclick=async()=>{const photos={};for(const d of Object.values(db.docs))for(const m of d.maps||[])for(const x of m.items)for(const p of x.ph||[]){const b=await PDB.get(p.id).catch(()=>null);if(b)photos[p.id]=await blobToDataURL(b)}
+ dl('Lagekarte_Sicherung_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({...db,photos}),'application/json')};
+$('docImp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const d=JSON.parse(await f.text());if(!d.docs)throw 0;let n=0;for(const k in d.docs){if(!db.docs[k]||confirm('Lage „'+(d.docs[k].name||k)+'“ existiert bereits. Überschreiben?')){db.docs[k]=d.docs[k];n++}}for(const [id,u] of Object.entries(d.photos||{})){try{await PDB.put(id,await (await fetch(u)).blob())}catch(x){}}save();renderDocs();toast(n+' Lagen importiert')}catch(x){toast('Datei ist keine gültige Sicherung')}};
 function vehList(m){const P=m.items.filter(isP);if(!P.length||!P.some(p=>p.v||p.vt))return'';const T=targets(m.items);
  const pd=p=>esc(SYM[p.k].n+(p.n?' ×'+p.n:'')+(p.m?' '+p.m:'')+(p.l?' – '+p.l:''));const used=new Set();
  const rows=T.map(x=>{const ps=P.filter(p=>p.v&&p.v===x.id);ps.forEach(p=>used.add(p));return ps.length||x.t==='obj'?`<tr><td>${esc(tgName(x))}</td><td>${esc(tgKind(x))}</td><td>${ps.length?ps.map(pd).join('<br>'):'–'}</td></tr>`:''}).join('');
  const ft={};P.filter(p=>!used.has(p)&&p.vt).forEach(p=>{(ft[p.vt]=ft[p.vt]||[]).push(p);used.add(p)});
  const rest=P.filter(p=>!used.has(p));
  return `<h2>Zuordnung Personen</h2><table><tr><th>Ort / Fahrzeug</th><th>Art</th><th>Personen</th></tr>${rows}${Object.entries(ft).map(([k,ps])=>`<tr><td>${esc(k)}</td><td>Freitext</td><td>${ps.map(pd).join('<br>')}</td></tr>`).join('')}${rest.length?`<tr><td>ohne Zuordnung</td><td></td><td>${rest.map(pd).join('<br>')}</td></tr>`:''}</table>`}
-$('docPrint').onclick=()=>{const o=op();if(!o)return;const l=(o.maps||[]).filter(m=>m.items.length);if(!l.length)return toast('Keine Inhalte zum Drucken');
- $('print').innerHTML=l.map(m=>`<div class="sheet"><h1>${esc(o.name)} – ${esc(m.name)}</h1><p style="margin:0 0 6pt">Stand ${dt(new Date())} · nicht maßstäblich</p>${sheetSVG(m)}${vehList(m)}</div>`).join('');setTimeout(()=>window.print(),50)};
-if(!op())newDoc();openDoc(db.cur);
+$('docPrint').onclick=async()=>{const o=op();if(!o)return;const l=(o.maps||[]).filter(m=>m.items.length);if(!l.length)return toast('Keine Inhalte zum Drucken');
+ $('print').innerHTML=l.map(m=>`<div class="sheet"><h1>${esc(o.name)} – ${esc(m.name)}</h1><p style="margin:0 0 6pt">Stand ${dt(new Date())} · nicht maßstäblich</p>${sheetSVG(m)}${vehList(m)}</div>`).join('');
+ $('print').insertAdjacentHTML('beforeend',await phPrintHtml(o));setTimeout(()=>window.print(),50)};
+if(!op())newDoc();openDoc(db.cur);setTimeout(phGc,3000);
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 try{navigator.storage?.persist?.()}catch(e){}
 if(navigator.standalone===false&&/iPad|Macintosh/.test(navigator.userAgent)&&'ontouchend' in document&&!localStorage.getItem(KEY+'.hint')){toast('Tipp: Teilen → „Zum Home-Bildschirm“ – dann läuft die Lagekarte wie eine App, auch offline.');try{localStorage.setItem(KEY+'.hint','1')}catch(e){}}
