@@ -103,6 +103,22 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 #toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;display:grid;gap:6px;pointer-events:none}
 #toast div{background:#16191c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 #print .sheet:first-child{break-before:auto}
+@media screen{
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{display:flex;flex-direction:column;height:100vh;height:100dvh}
+header.lk{flex:0 0 auto;position:static}
+main.lk{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;width:100%;max-width:none;margin:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+#s-map.on{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+.mapcard{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin:0}
+.mbar,.tools,.props{flex:0 0 auto}
+.tools{flex-wrap:wrap;overflow:visible;gap:4px;padding:0 0 5px}
+.tools button{min-height:40px;padding:4px 10px;font-size:14px}
+.tools .ico{width:48px;padding:2px}.tools .ico img{width:40px;height:32px}
+.mapwrap{flex:1 1 auto;min-height:0}
+#map{height:100%!important;min-height:0}
+.props{min-height:0;padding-top:6px}.props .sm{min-height:38px}
+dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
+}
 </style>
 </head>
 <body>
@@ -123,7 +139,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%}
    <div class="zoom"><button id="zIn" aria-label="Vergrößern">+</button><button id="zOut" aria-label="Verkleinern">−</button><button id="zFit" title="Einpassen">⤢</button><button id="mGrid" class="on" title="Raster / Fangen">#</button><button id="mUndo" title="Rückgängig">↶</button></div></div>
   <div id="props" class="props"></div>
  </div>
- <p class="hint">Taktische Zeichen nach dem freien Zeichensatz „Taktische-Zeichen“ von Jonas Köritz (CC BY 4.0), angelehnt an die DV 102. Fahrzeuge, Grundriss- und Schnittelemente sind eigene Darstellungen. Raster 1 m (fein) / 5 m (grob) dient der Orientierung, Skizzen sind nicht maßstäblich.</p>
+ 
 
 </section>
 </main>
@@ -143,7 +159,8 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 <dialog id="dDocs"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Gespeicherte Lagen</h2><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
  <ul class="log elist" id="docs"></ul>
  <div class="dl"><button id="docNew" class="pri">Neue Lage</button><button id="docExp">Sicherung exportieren</button><label class="btn" style="margin:0;display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:15px">Sicherung importieren<input id="docImp" type="file" accept="application/json,.json" hidden></label></div>
- <p class="hint">Alle Daten liegen nur lokal im Browser dieses Geräts. Browserdaten löschen = Lagen weg. Bei Bedarf vorher sichern.</p></dialog>
+ <p class="hint">Alle Daten liegen nur lokal im Browser dieses Geräts. Browserdaten löschen = Lagen weg. Bei Bedarf vorher sichern.</p>
+ <p class="hint">Taktische Zeichen nach dem freien Zeichensatz „Taktische-Zeichen“ von Jonas Köritz (CC BY 4.0), angelehnt an die DV 102. Fahrzeuge, Grundriss- und Schnittelemente sind eigene Darstellungen. Raster 1 m (fein) / 5 m (grob) dient der Orientierung, Skizzen sind nicht maßstäblich.</p></dialog>
 <dialog id="dImg"><h2>Blatt als Bild</h2><img id="dImgI" alt="Vorschau des Blatts"><p class="hint">„Teilen“ öffnet das iPad-Menü: In Dateien sichern, Bild sichern, AirDrop, Mail. Alternativ das Bild lange drücken.</p>
  <div class="row"><button class="pri" id="dImgS">Teilen / Sichern</button><button class="ghost fix" onclick="this.closest('dialog').close()">Schließen</button></div></dialog>
 <div id="toast" aria-live="polite"></div>
@@ -268,6 +285,7 @@ const sp=p=>({x:snapV(p.x),y:snapV(p.y)});
 function toW(cx,cy){const m=map.getScreenCTM();if(!m)return{x:0,y:0};const q=new DOMPoint(cx,cy).matrixTransform(m.inverse());return{x:q.x,y:q.y}}
 const halo=(x,y,t,fs,c='#000',a='middle')=>t?`<text x="${r1(x)}" y="${r1(y)}" font-size="${fs}" font-family="Arial,Helvetica,sans-serif" font-weight="bold" text-anchor="${a}" fill="${c}" stroke="#fff" stroke-width="${fs/5}" paint-order="stroke" stroke-linejoin="round">${esc(t)}</text>`:'';
 const pd=p=>p.map((q,i)=>(i?'L':'M')+r1(q[0])+','+r1(q[1])).join('');
+const pds=p=>{if(p.length<3)return pd(p);let d='M'+r1(p[0][0])+','+r1(p[0][1]);for(let i=1;i<p.length-1;i++)d+='Q'+r1(p[i][0])+','+r1(p[i][1])+' '+r1((p[i][0]+p[i+1][0])/2)+','+r1((p[i][1]+p[i+1][1])/2);const l=p[p.length-1];return d+'L'+r1(l[0])+','+r1(l[1])};
 function rItem(it,i){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0}) scale(${it.s||1})`;
  switch(it.t){
  case 'wall':s=`<line x1="${it.x1}" y1="${it.y1}" x2="${it.x2}" y2="${it.y2}" stroke="#1b1f23" stroke-width="${it.w}" stroke-linecap="square"/>`;break;
@@ -275,7 +293,7 @@ function rItem(it,i){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotat
  case 'door':s=`<g transform="${tf} scale(1,${it.f||1})"><line x1="2" y1="0" x2="38" y2="0" stroke="#fff" stroke-width="14"/><path d="M0,0 L0,-40 M0,-40 A40,40 0 0,1 40,0" fill="#fff" fill-opacity=".01" stroke="#1b1f23" stroke-width="2.5"/></g>`;break;
  case 'win':s=`<g transform="${tf}"><rect x="0" y="-6" width="60" height="12" fill="#fff" stroke="#1b1f23" stroke-width="2"/><line x1="0" y1="0" x2="60" y2="0" stroke="#1b1f23" stroke-width="2"/></g>`;break;
  case 'stair':s=`<g transform="${tf}"><rect x="0" y="0" width="80" height="160" fill="#fff" stroke="#1b1f23" stroke-width="3"/>${[1,2,3,4,5,6,7,8,9].map(k=>`<line x1="0" y1="${k*16}" x2="80" y2="${k*16}" stroke="#1b1f23" stroke-width="1.5"/>`).join('')}<path d="M40,150 L40,18" stroke="#111" stroke-width="3" marker-end="url(#m-k)"/></g>`;break;
- case 'line':{const d=pd(it.pts),c=PEN[it.c]||PEN.r,m=it.pts[Math.floor(it.pts.length/2)];
+ case 'line':{const d=(['free','hose','arrow'].includes(it.k)?pds:pd)(it.pts),c=PEN[it.c]||PEN.r,m=it.pts[Math.floor(it.pts.length/2)];
   s=`<path d="${d}" fill="none" stroke="rgba(0,0,0,0)" stroke-width="26" stroke-linecap="round"/>`;
   if(it.k==='hose')s+=`<path d="${d}" fill="none" stroke="#0050c8" stroke-width="${it.w||5}" stroke-linecap="round" stroke-linejoin="round"/>`;
   else if(it.k==='barrier')s+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="${it.w||8}"/><path d="${d}" fill="none" stroke="#e00000" stroke-width="${it.w||8}" stroke-dasharray="16 12"/>`;
@@ -340,8 +358,17 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 function rdp(p,eps){if(p.length<3)return p;let dm=0,ix=0;const[a,b]=[p[0],p[p.length-1]];for(let i=1;i<p.length-1;i++){const d=segD(p[i],a,b);if(d>dm){dm=d;ix=i}}return dm>eps?[...rdp(p.slice(0,ix+1),eps).slice(0,-1),...rdp(p.slice(ix),eps)]:[a,b]}
 function segD(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;let t=l?((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)}
 function shift(it,o,dx,dy){if(it.t==='wall'){it.x1=o.x1+dx;it.y1=o.y1+dy;it.x2=o.x2+dx;it.y2=o.y2+dy}else if(it.t==='line')it.pts=o.pts.map(q=>[q[0]+dx,q[1]+dy]);else{it.x=o.x+dx;it.y=o.y+dy}}
-map.onpointerdown=e=>{if(!need())return;map.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(ptrs.size===2){if(act&&act.type==='create'){items().pop();undo.pop();sel=-1}act=null;const[a,b]=[...ptrs.values()];pinch={d:dist(a,b),vb:{...vb},m:toW((a.x+b.x)/2,(a.y+b.y)/2)};renderMap();return}
+const setVB=()=>{map.setAttribute('viewBox',`${r1(vb.x)} ${r1(vb.y)} ${r1(vb.w)} ${r1(vb.h)}`);const o=$('ov');if(o)o.innerHTML=''};
+function upd(i){const g=map.querySelector(`#world>[data-i="${i}"]`);if(!g){renderMap();return}g.outerHTML=rItem(items()[i],i);const o=$('ov');if(o)o.innerHTML=''}
+const pxW=()=>Math.max(vb.w/map.clientWidth,vb.h/map.clientHeight)||1;
+let penId=null;
+// iOS: Seite darf beim Zeichnen weder scrollen noch zoomen
+for(const t of ['touchstart','touchmove'])map.addEventListener(t,e=>e.preventDefault(),{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+map.onpointerdown=e=>{if(!need())return;
+ if(e.pointerType==='pen')penId=e.pointerId;else if(e.pointerType==='touch'&&penId!==null)return; // Handballen beim Stift ignorieren
+ e.preventDefault();try{map.setPointerCapture(e.pointerId)}catch(x){}ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(ptrs.size===2){if(act&&act.type==='create'){items().pop();undo.pop();sel=-1;renderMap()}act=null;const[a,b]=[...ptrs.values()];pinch={d:dist(a,b),vb:{...vb},m:toW((a.x+b.x)/2,(a.y+b.y)/2)};setVB();return}
  if(ptrs.size>2)return;const p=toW(e.clientX,e.clientY),q=sp(p);
  const h=e.target.closest('[data-h]');if(h&&sel>=0){snap();const i0=items()[sel];act={type:'h',h:h.dataset.h,s0:i0.s||1,d0:Math.max(Math.hypot(p.x-i0.x,p.y-i0.y),1)};return}
  const g=e.target.closest('#world>[data-i]');
@@ -355,26 +382,27 @@ map.onpointerdown=e=>{if(!need())return;map.setPointerCapture(e.pointerId);ptrs.
   case 'stair':n={t:'stair',x:q.x,y:q.y,r:0,s:1};break;case 'text':n={t:'text',x:r1(p.x),y:r1(p.y),r:0,s:1,l:'Text',c:pen};break;
   case 'place':n=SYM[placing]?{t:'sym',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:''}:{t:'obj',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:placing==='hyd'?'UH':''};break}
  if(!n){undo.pop();return}items().push(n);sel=items().length-1;act={type:'create',p0:q};renderMap()};
-map.onpointermove=e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+map.onpointermove=e=>{if(!ptrs.has(e.pointerId))return;e.preventDefault();ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(pinch&&ptrs.size===2){const[a,b]=[...ptrs.values()],f=pinch.d/Math.max(dist(a,b),1),w=Math.min(Math.max(pinch.vb.w*f,150),20000),h=w*pinch.vb.h/pinch.vb.w;
-  vb={x:pinch.m.x-(pinch.m.x-pinch.vb.x)*w/pinch.vb.w,y:pinch.m.y-(pinch.m.y-pinch.vb.y)*h/pinch.vb.h,w,h};renderMap();return}
+  vb={x:pinch.m.x-(pinch.m.x-pinch.vb.x)*w/pinch.vb.w,y:pinch.m.y-(pinch.m.y-pinch.vb.y)*h/pinch.vb.h,w,h};setVB();return}
  if(!act)return;const p=toW(e.clientX,e.clientY),q=sp(p),it=items()[sel];
- if(act.type==='pan'){const r=map.getBoundingClientRect(),k=Math.max(vb.w/r.width,vb.h/r.height);vb.x=act.vb.x-(e.clientX-act.c.x)*k;vb.y=act.vb.y-(e.clientY-act.c.y)*k;renderMap();return}
- if(act.type==='move'){let dx=p.x-act.p0.x,dy=p.y-act.p0.y;if(Math.hypot(dx,dy)<4&&!act.mv)return;act.mv=1;if(['wall','room','door','win','stair'].includes(it.t)){dx=snapV(dx);dy=snapV(dy)}shift(it,act.o,r1(dx),r1(dy));renderMap();return}
- if(act.type==='h'){const h=act.h;if(h==='p1'){it.x1=q.x;it.y1=q.y}if(h==='p2'){it.x2=q.x;it.y2=q.y}if(h==='br'){it.w=Math.max(20,(it.t==='img'?r1(p.x):q.x)-it.x);it.h=it.t==='img'&&it.ar?r1(it.w*it.ar):Math.max(20,q.y-it.y)}if(h==='sc'){it.s=Math.max(.2,Math.min(8,Math.round(act.s0*Math.hypot(p.x-it.x,p.y-it.y)/act.d0*100)/100));renderMap();syncS();return}if(h==='r')it.r=Math.max(10,r1(dist(p,it)));if(h==='l0')it.pts[0]=[r1(p.x),r1(p.y)];if(h==='l1')it.pts[1]=[r1(p.x),r1(p.y)];renderMap();return}
+ if(act.type==='pan'){const r=map.getBoundingClientRect(),k=Math.max(vb.w/r.width,vb.h/r.height);vb.x=act.vb.x-(e.clientX-act.c.x)*k;vb.y=act.vb.y-(e.clientY-act.c.y)*k;setVB();return}
+ if(act.type==='move'){let dx=p.x-act.p0.x,dy=p.y-act.p0.y;if(Math.hypot(dx,dy)<4*pxW()&&!act.mv)return;act.mv=1;if(['wall','room','door','win','stair'].includes(it.t)){dx=snapV(dx);dy=snapV(dy)}shift(it,act.o,r1(dx),r1(dy));upd(sel);return}
+ if(act.type==='h'){const h=act.h;if(h==='p1'){it.x1=q.x;it.y1=q.y}if(h==='p2'){it.x2=q.x;it.y2=q.y}if(h==='br'){it.w=Math.max(20,(it.t==='img'?r1(p.x):q.x)-it.x);it.h=it.t==='img'&&it.ar?r1(it.w*it.ar):Math.max(20,q.y-it.y)}if(h==='sc'){it.s=Math.max(.2,Math.min(8,Math.round(act.s0*Math.hypot(p.x-it.x,p.y-it.y)/act.d0*100)/100));syncS()}if(h==='r')it.r=Math.max(10,r1(dist(p,it)));if(h==='l0')it.pts[0]=[r1(p.x),r1(p.y)];if(h==='l1')it.pts[1]=[r1(p.x),r1(p.y)];upd(sel);return}
  if(act.type==='create'){switch(it.t){
   case 'wall':{let x=q.x,y=q.y;const dx=Math.abs(x-it.x1),dy=Math.abs(y-it.y1);if(dy<dx*.2)y=it.y1;else if(dx<dy*.2)x=it.x1;it.x2=x;it.y2=y;break}
   case 'room':it.x=Math.min(act.p0.x,q.x);it.y=Math.min(act.p0.y,q.y);it.w=Math.abs(q.x-act.p0.x);it.h=Math.abs(q.y-act.p0.y);break;
   case 'zone':it.r=r1(dist(p,it));break;
-  case 'line':{const l=it.pts[it.pts.length-1];if(Math.hypot(p.x-l[0],p.y-l[1])>vb.w/300)it.pts.push([r1(p.x),r1(p.y)]);break}
-  default:if(it.t==='sym'||it.t==='obj'||it.t==='text'){it.x=r1(p.x);it.y=r1(p.y)}else{it.x=q.x;it.y=q.y}}renderMap()}};
-map.onpointerup=map.onpointercancel=e=>{ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2)pinch=null;act=null;saveVb();return}
+  case 'line':{let evs=[];try{evs=e.getCoalescedEvents?e.getCoalescedEvents():[]}catch(x){}if(!evs.length)evs=[e];const m=.8*pxW();
+   for(const v of evs){const w=toW(v.clientX,v.clientY),l=it.pts[it.pts.length-1];if(Math.hypot(w.x-l[0],w.y-l[1])>m)it.pts.push([r1(w.x),r1(w.y)])}break}
+  default:if(it.t==='sym'||it.t==='obj'||it.t==='text'){it.x=r1(p.x);it.y=r1(p.y)}else{it.x=q.x;it.y=q.y}}upd(sel)}};
+map.onpointerup=map.onpointercancel=e=>{if(e.pointerId===penId)penId=null;if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2){pinch=null;renderMap()}act=null;saveVb();return}
  if(!act)return;const it=items()[sel];
  if(act.type==='create'){let bad=false;
   if(it.t==='wall')bad=Math.hypot(it.x2-it.x1,it.y2-it.y1)<20;
   if(it.t==='room')bad=it.w<20||it.h<20;
   if(it.t==='zone'&&it.r<20)it.r=120;
-  if(it.t==='line'){if(it.pts.length<2)bad=true;else it.pts=it.k==='free'?rdp(it.pts,vb.w/700):rdp(it.pts,vb.w/150)}
+  if(it.t==='line'){if(it.pts.length<2)bad=true;else it.pts=it.k==='free'?rdp(it.pts,.35*pxW()):rdp(it.pts,(it.k==='barrier'?6:2.5)*pxW())}
   if(bad){items().pop();undo.pop();sel=-1}
   if(!bad&&['wall','room','door','win','stair','line','zone'].includes(it?.t))sel=-1;
   save();act=null;render();if(!bad&&it.t==='text'){setTool('sel');sel=items().length-1;render();$('pL')?.select()}return}
@@ -386,7 +414,7 @@ function saveVb(){const s=sh();if(s){s.vb={...vb};saveSoon()}}
 const mid=()=>({x:vb.x+vb.w/2,y:vb.y+vb.h/2});
 $('zIn').onclick=()=>zoomAt(mid(),1/1.3);$('zOut').onclick=()=>zoomAt(mid(),1.3);
 function bbox(list){const m=$('meas');m.innerHTML=`<defs>${MARK}</defs><g>${itemsSVG(list)}</g>`;const b=m.lastChild.getBBox();m.innerHTML='';return b}
-function fit(){const s=sh();if(!s||!s.items.length){vb={x:0,y:0,w:1600,h:1000};renderMap();return}const b=bbox(s.items),r=map.getBoundingClientRect(),ar=r.height/r.width||.62;let w=b.width+160,h=b.height+160;if(h/w>ar)w=h/ar;else h=w*ar;vb={x:b.x+b.width/2-w/2,y:b.y+b.height/2-h/2,w,h};renderMap();saveVb()}
+function fit(){const s=sh();if(!s||!s.items.length){vb={x:0,y:0,w:1600,h:1000};renderMap();return}const b=bbox(s.items),r=map.getBoundingClientRect(),ar=r.height/r.width||.62;let w=Math.max(b.width+160,1200),h=b.height+160;if(h/w>ar)w=h/ar;else h=w*ar;vb={x:b.x+b.width/2-w/2,y:b.y+b.height/2-h/2,w,h};renderMap();saveVb()}
 $('zFit').onclick=fit;$('mUndo').onclick=doUndo;
 $('mGrid').onclick=()=>{snapOn=!snapOn;$('mGrid').classList.toggle('on',snapOn);renderMap()};
 $('props').onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a,s=sh(),it=s?.items[sel];if(!a||!it)return;snap();
