@@ -285,6 +285,14 @@ const OBJ={
  wagen:['Wagen (Draufsicht)','<rect x="-520" y="-58" width="1040" height="116" rx="10" fill="#e3e6e9" stroke="#000" stroke-width="3"/><path d="M-440,-58 v116 M440,-58 v116" stroke="#000" stroke-width="2"/><path d="M-520,0 h-14 M520,0 h14" stroke="#000" stroke-width="6"/>'],
  nord:['Nordpfeil','<path d="M0,-50 L18,30 L0,18 L-18,30 Z" fill="#111"/><text y="62" text-anchor="middle" font-size="30" font-weight="bold" font-family="Arial">N</text>']};
 const VEH=['pkw','lkw','bus','krad','lok','wagen'];
+const isP=x=>x&&x.t==='sym'&&SYM[x.k]?.c==='Personen';
+function tgName(x){return x.t==='obj'?(x.l||OBJ[x.k][0]):x.l||''}
+function targets(list){return list.filter(x=>(x.t==='obj'&&VEH.includes(x.k))||((x.t==='room'||x.t==='zone')&&x.l))}
+function tgKind(x){return x.t==='obj'?'Fahrzeug':x.ghost?'Geschoss':x.t==='zone'?'Bereich':'Raum/Gebäude'}
+function inside(x,p){return x.t==='room'?p.x>=x.x&&p.x<=x.x+x.w&&p.y>=x.y&&p.y<=x.y+x.h:x.t==='zone'?Math.hypot(p.x-x.x,p.y-x.y)<=x.r:false}
+function tgCenter(x){return x.t==='room'?{x:x.x+x.w/2,y:x.y+x.h/2}:{x:x.x,y:x.y}}
+function autoAssign(it,list){if(!isP(it)||it.vt!==undefined||(it.v&&!it.va))return;const c=list.filter(x=>x.t==='room'&&x.l&&inside(x,it)).sort((a,b)=>a.w*a.h-b.w*b.h)[0];
+ if(c){if(!c.id)c.id=uid();it.v=c.id;it.va=1}else if(it.va){delete it.v;delete it.va}}
 const OBJDEF=Object.entries(OBJ).map(([k,[n]])=>[k,n]);
 const PEN={r:'#d00000',b:'#0050c8',k:'#111111',g:'#08803a'};
 const MARK=Object.entries(PEN).map(([k,c])=>`<marker id="m-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`).join('');
@@ -312,7 +320,7 @@ const pds=p=>{if(p.length<3)return pd(p);let d='M'+r1(p[0][0])+','+r1(p[0][1]);f
 function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0}) scale(${it.s||1})`;
  switch(it.t){
  case 'wall':s=`<line x1="${it.x1}" y1="${it.y1}" x2="${it.x2}" y2="${it.y2}" stroke="#1b1f23" stroke-width="${it.w}" stroke-linecap="square"/>`;break;
- case 'room':s=`<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="#fff" fill-opacity=".01" stroke="#1b1f23" stroke-width="${it.sw||6}"/>`+halo(it.x+it.w/2,it.y+it.h/2+9,it.l,26);break;
+ case 'room':if(it.ghost){s=`<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="none" stroke="none"/>`;break}s=`<rect x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" fill="#fff" fill-opacity=".01" stroke="#1b1f23" stroke-width="${it.sw||6}"/>`+halo(it.x+it.w/2,it.y+it.h/2+9,it.l,26);break;
  case 'door':s=`<g transform="${tf} scale(1,${it.f||1})"><line x1="2" y1="0" x2="38" y2="0" stroke="#fff" stroke-width="14"/><path d="M0,0 L0,-40 M0,-40 A40,40 0 0,1 40,0" fill="#fff" fill-opacity=".01" stroke="#1b1f23" stroke-width="2.5"/></g>`;break;
  case 'win':s=`<g transform="${tf}"><rect x="0" y="-6" width="60" height="12" fill="#fff" stroke="#1b1f23" stroke-width="2"/><line x1="0" y1="0" x2="60" y2="0" stroke="#1b1f23" stroke-width="2"/></g>`;break;
  case 'stair':s=`<g transform="${tf}"><rect x="0" y="0" width="80" height="160" fill="#fff" stroke="#1b1f23" stroke-width="3"/>${[1,2,3,4,5,6,7,8,9].map(k=>`<line x1="0" y1="${k*16}" x2="80" y2="${k*16}" stroke="#1b1f23" stroke-width="1.5"/>`).join('')}<path d="M40,150 L40,18" stroke="#111" stroke-width="3" marker-end="url(#m-k)"/></g>`;break;
@@ -336,9 +344,9 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
  case 'zone':s=`<circle cx="${it.x}" cy="${it.y}" r="${r1(it.r)}" fill="#e00000" fill-opacity=".07" stroke="#e00000" stroke-width="3" stroke-dasharray="14 10"/>`+halo(it.x,it.y-it.r-10,it.l,24,'#c00000');break;
  case 'box':{const L=(it.l||'').split('|'),h=L.length*30+24,y0=it.y-h/2;s=`<rect x="${r1(it.x-it.w/2)}" y="${r1(y0)}" width="${it.w}" height="${h}" fill="#fff" stroke="#1f4fd1" stroke-width="3" stroke-dasharray="10 6"/>`+L.map((t,i)=>{const b=t[0]==='*'||t[0]==='!';return `<text x="${r1(it.x)}" y="${r1(y0+33+i*30)}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${b?24:21}" font-weight="${b?'bold':'normal'}" fill="${t[0]==='!'?'#e00000':'#111'}">${esc(b?t.slice(1):t)}</text>`}).join('');break}
  case 'text':s=`<g transform="${tf}">${halo(0,0,it.l||' ',26,PEN[it.c]||'#111',it.a||'start')}</g>`;break;
- case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);const V=S.c==='Personen'&&it.v?(L||items()).find(x=>x.id===it.v):null;
-  if(V)s=`<line x1="${r1(it.x)}" y1="${r1(it.y)}" x2="${r1(V.x)}" y2="${r1(V.y)}" stroke="#444" stroke-width="2.5" stroke-dasharray="8 6" pointer-events="none"/><circle cx="${r1(V.x)}" cy="${r1(V.y)}" r="5" fill="#444" pointer-events="none"/>`;
-  s+=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,[it.l,V?'→ '+(V.l||OBJ[V.k][0]):''].filter(Boolean).join(' '),22);break}
+ case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);const V=S.c==='Personen'&&it.v?(L||items()).find(x=>x.id===it.v):null,VC=V&&!inside(V,it)?tgCenter(V):null;
+  if(VC)s=`<line x1="${r1(it.x)}" y1="${r1(it.y)}" x2="${r1(VC.x)}" y2="${r1(VC.y)}" stroke="#444" stroke-width="2.5" stroke-dasharray="8 6" pointer-events="none"/><circle cx="${r1(VC.x)}" cy="${r1(VC.y)}" r="5" fill="#444" pointer-events="none"/>`;
+  s+=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,[it.l,V&&!V.ghost?'→ '+tgName(V):it.vt?'→ '+it.vt:''].filter(Boolean).join(' '),22);break}
  case 'obj':{const O=OBJ[it.k];if(!O)break;s=`<g transform="${tf}">${O[1]}</g>`+halo(it.x,it.y+(it.k==='hyd'?44:it.k==='pkw'||it.k==='krad'?60:72)*(it.s||1),it.l,20);break}
  case 'img':s=`<image href="${it.src}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" opacity="${it.op||.8}" preserveAspectRatio="none"/>`;break}
  return `<g data-i="${i}"${it.lock?' pointer-events="none"':''}>${s}</g>`}
@@ -358,7 +366,7 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
 function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
  const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
- +(it.t==='sym'&&SYM[it.k].c==='Personen'?(()=>{const vs=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k));return vs.length?`<span class="grp"><span class="szl">aus Fahrzeug</span><select id="pV" style="width:auto;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(x.l||OBJ[x.k][0])}</option>`).join('')}</select></span>`:''})():'')
+ +(isP(it)?(()=>{const vs=targets(s.items);return `<span class="grp"><span class="szl">Ort / Fahrzeug</span><select id="pV" style="width:auto;max-width:220px;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(tgKind(x)+': '+tgName(x))}${x.id===it.v&&it.va?' (auto)':''}</option>`).join('')}<option value="txt"${it.vt?' selected':''}>Freitext …</option></select>${it.vt!==undefined?`<input id="pVt" value="${esc(it.vt||'')}" placeholder="z. B. Wohnung links" style="flex:0 0 170px;min-height:36px">`:''}</span>`})():'')
  +(it.t==='sym'&&SYM[it.k].c==='Personen'?`<span class="grp"><span class="szl">Anzahl</span><button class="sm" data-a="n-" aria-label="Anzahl verringern">−</button><input id="pN" type="number" min="0" max="999" inputmode="numeric" pattern="[0-9]*" value="${it.n||''}" placeholder="–" aria-label="Anzahl"><button class="sm" data-a="n+" aria-label="Anzahl erhöhen">+</button></span><span class="grp"><span class="szl">Status</span><button class="sm${!it.m?' on':''}" data-a="m0">–</button><button class="sm${it.m==='?'?' on':''}" data-a="m?">? vermutet</button><button class="sm${it.m==='!'?' on':''}" data-a="m!">! bestätigt</button></span>`:'')
  +(SCAL.includes(it.t)?`<span class="szl">Größe</span><button class="sm" data-a="s-" aria-label="Kleiner">−</button><input id="pS" type="range" min="20" max="600" step="5" value="${Math.round((it.s||1)*100)}" aria-label="Größe"><span id="pSv" class="szl num">${Math.round((it.s||1)*100)} %</span><button class="sm" data-a="s+" aria-label="Größer">+</button>`:'')
  +(ROT.includes(it.t)&&it.t!=='img'?'<button class="sm" data-a="r-">⟲ 15°</button><button class="sm" data-a="r+">⟳ 15°</button><button class="sm" data-a="r90">90°</button>':'')
@@ -366,7 +374,8 @@ function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.in
  +(STRK.includes(it.t)?'<button class="sm" data-a="w-">Dünner</button><button class="sm" data-a="w+">Dicker</button>':'')
  +(it.t==='text'||(it.t==='line'&&['arrow','free'].includes(it.k))?Object.keys(PEN).map(k=>`<button class="sm dot" data-a="c-${k}" style="background:${PEN[k]}" aria-label="Farbe"></button>`).join(''):'')
  +'<button class="sm" data-a="dup">Duplizieren</button><button class="sm" data-a="lock">Fixieren</button><button class="sm del" data-a="del">Löschen</button>';
- const PV=$('pV');if(PV)PV.onchange=()=>{snap();const vs=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k)),V=vs[+PV.value];if(V){if(!V.id)V.id=uid();it.v=V.id}else delete it.v;save();renderMap()};
+ const PV=$('pV');if(PV)PV.onchange=()=>{snap();delete it.va;if(PV.value==='txt'){delete it.v;it.vt=it.vt||'';save();renderProps();$('pVt')?.focus();return}delete it.vt;const V=targets(s.items)[+PV.value];if(V){if(!V.id)V.id=uid();it.v=V.id}else delete it.v;save();renderMap();renderProps()};
+ const PVt=$('pVt');if(PVt){PVt.oninput=()=>{it.vt=PVt.value;renderMap();saveSoon()}}
  const N=$('pN');if(N){N.onfocus=()=>snap();N.oninput=()=>{const v=parseInt(N.value,10);it.n=v>0?Math.min(v,999):0;renderMap();saveSoon()}}
  const S=$('pS');if(S){S.onpointerdown=S.onkeydown=()=>{if(!S.dataset.u){snap();S.dataset.u=1}};S.oninput=()=>{it.s=S.value/100;$('pSv').textContent=S.value+' %';renderMap();saveSoon()};S.onchange=()=>{delete S.dataset.u;save()}}
  const L=$('pL');if(L){L.onfocus=()=>snap();L.oninput=()=>{it.l=L.value;renderMap();saveSoon()}}}
@@ -448,9 +457,10 @@ map.onpointerup=map.onpointercancel=e=>{if(e.pointerId===penId)penId=null;if(!pt
   if(it.t==='zone'&&it.r<20)it.r=120;
   if(it.t==='line'){if(it.pts.length<2)bad=true;else it.pts=it.k==='free'?rdp(it.pts,.35*pxW()):rdp(it.pts,(it.k==='barrier'?6:2.5)*pxW())}
   if(bad){items().pop();undo.pop();sel=-1}
+  if(!bad)autoAssign(it,items());
   if(!bad&&['wall','room','door','win','stair','line','zone'].includes(it?.t))sel=-1;
   save();act=null;render();if(!bad&&it.t==='text'){setTool('sel');sel=items().length-1;render();$('pL')?.select()}return}
- if(act.type==='move'&&!act.mv)undo.pop();if(act.type==='pan')saveVb();
+ if(act.type==='move'&&!act.mv)undo.pop();if(act.type==='move'&&act.mv)autoAssign(it,items());if(act.type==='pan')saveVb();
  act=null;save();render()};
 map.addEventListener('wheel',e=>{e.preventDefault();const p=toW(e.clientX,e.clientY),f=e.deltaY>0?1.15:1/1.15;zoomAt(p,f)},{passive:false});
 function zoomAt(p,f){const w=Math.min(Math.max(vb.w*f,150),20000),h=w*vb.h/vb.w;vb={x:p.x-(p.x-vb.x)*w/vb.w,y:p.y-(p.y-vb.y)*h/vb.h,w,h};renderMap();saveVb()}
@@ -508,6 +518,8 @@ const TPL={
   it.push(W_(x0,bot,x0,top),W_(x1,bot,x1,top));
   for(let k=kel?-1:0;k<=n;k++)it.push(W_(x0,gy-k*H,x1,gy-k*H,k===n&&dach==='sattel'?10:12));
   it.push(W_(x0+180,bot,x0+180,top,6));
+  for(let k=kel?-1:0;k<n;k++){const yb=gy-k*H;it.unshift({t:'room',x:x0,y:yb-H,w:x1-x0,h:H,l:k<0?'KG':k===0?'EG':k+'. OG',ghost:1,lock:1,id:uid()})}
+  if(dach==='sattel')it.unshift({t:'room',x:x0,y:top-200,w:x1-x0,h:200,l:'DG',ghost:1,lock:1,id:uid()});
   for(let k=kel?-1:0;k<n;k++){const yb=gy-k*H,yt=yb-H;it.push(LN('free',[[x0+20,yb-8],[x0+160,yt+12]]));it.push(TX(x1+30,yb-H/2+9,k<0?'KG':k===0?'EG':k+'. OG'))}
   it.push(TX(x0+30,bot+40,'TR',.8));
   if(dach==='sattel'){it.push(W_(x0-30,top+20,(x0+x1)/2,top-220,10),W_((x0+x1)/2,top-220,x1+30,top+20,10),TX(x1+30,top-60,'DG'))}else{it.push(W_(x0,top,x0,top-30,10),W_(x1,top,x1,top-30,10))}
@@ -639,10 +651,12 @@ $('docs').onclick=e=>{const t=e.target;if(t.dataset.op){$('dDocs').close();openD
 $('docNew').onclick=()=>{$('dDocs').close();openDoc(newDoc().id);$('docName').select()};
 $('docExp').onclick=()=>dl('Lagekarte_Sicherung_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(db),'application/json');
 $('docImp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const d=JSON.parse(await f.text());if(!d.docs)throw 0;let n=0;for(const k in d.docs){if(!db.docs[k]||confirm('Lage „'+(d.docs[k].name||k)+'“ existiert bereits. Überschreiben?')){db.docs[k]=d.docs[k];n++}}save();renderDocs();toast(n+' Lagen importiert')}catch(x){toast('Datei ist keine gültige Sicherung')}};
-function vehList(m){const vs=m.items.filter(x=>x.t==='obj'&&VEH.includes(x.k));const P=m.items.filter(x=>x.t==='sym'&&SYM[x.k]?.c==='Personen');if(!vs.length||!P.some(p=>p.v))return'';
- const row=V=>{const ps=P.filter(p=>p.v&&p.v===V.id);return `<tr><td>${esc(V.l||'')}</td><td>${esc(OBJ[V.k][0])}</td><td>${ps.length?ps.map(p=>esc(SYM[p.k].n+(p.n?' ×'+p.n:'')+(p.m?' '+p.m:'')+(p.l?' – '+p.l:''))).join('<br>'):'–'}</td></tr>`};
- const free=P.filter(p=>!p.v||!vs.some(V=>V.id===p.v));
- return `<h2>Zuordnung Personen – Fahrzeuge</h2><table><tr><th>Fahrzeug</th><th>Art</th><th>Personen</th></tr>${vs.map(row).join('')}${free.length?`<tr><td>ohne Zuordnung</td><td></td><td>${free.map(p=>esc(SYM[p.k].n+(p.n?' ×'+p.n:'')+(p.m?' '+p.m:'')+(p.l?' – '+p.l:''))).join('<br>')}</td></tr>`:''}</table>`}
+function vehList(m){const P=m.items.filter(isP);if(!P.length||!P.some(p=>p.v||p.vt))return'';const T=targets(m.items);
+ const pd=p=>esc(SYM[p.k].n+(p.n?' ×'+p.n:'')+(p.m?' '+p.m:'')+(p.l?' – '+p.l:''));const used=new Set();
+ const rows=T.map(x=>{const ps=P.filter(p=>p.v&&p.v===x.id);ps.forEach(p=>used.add(p));return ps.length||x.t==='obj'?`<tr><td>${esc(tgName(x))}</td><td>${esc(tgKind(x))}</td><td>${ps.length?ps.map(pd).join('<br>'):'–'}</td></tr>`:''}).join('');
+ const ft={};P.filter(p=>!used.has(p)&&p.vt).forEach(p=>{(ft[p.vt]=ft[p.vt]||[]).push(p);used.add(p)});
+ const rest=P.filter(p=>!used.has(p));
+ return `<h2>Zuordnung Personen</h2><table><tr><th>Ort / Fahrzeug</th><th>Art</th><th>Personen</th></tr>${rows}${Object.entries(ft).map(([k,ps])=>`<tr><td>${esc(k)}</td><td>Freitext</td><td>${ps.map(pd).join('<br>')}</td></tr>`).join('')}${rest.length?`<tr><td>ohne Zuordnung</td><td></td><td>${rest.map(pd).join('<br>')}</td></tr>`:''}</table>`}
 $('docPrint').onclick=()=>{const o=op();if(!o)return;const l=(o.maps||[]).filter(m=>m.items.length);if(!l.length)return toast('Keine Inhalte zum Drucken');
  $('print').innerHTML=l.map(m=>`<div class="sheet"><h1>${esc(o.name)} – ${esc(m.name)}</h1><p style="margin:0 0 6pt">Stand ${dt(new Date())} · nicht maßstäblich</p>${sheetSVG(m)}${vehList(m)}</div>`).join('');setTimeout(()=>window.print(),50)};
 if(!op())newDoc();openDoc(db.cur);
