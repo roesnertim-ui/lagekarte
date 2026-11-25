@@ -188,8 +188,10 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
 <dialog id="dPhoto"><div class="row" style="align-items:center"><h2 id="phTitle" style="margin:0;flex:1 1 auto"></h2><label class="btn pri" style="margin:0;display:flex;align-items:center;color:#fff;background:var(--red);border-color:var(--red)">Foto hinzufügen<input id="phAdd" type="file" accept="image/*" multiple hidden></label><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
  <div id="phGrid" class="phgrid"></div><div id="phBig" hidden><img id="phBigI" alt="Foto" style="width:100%;max-height:68vh;object-fit:contain;background:#000;border-radius:8px"><p id="phBigC"></p><button class="sm" id="phBack">Zurück zur Übersicht</button></div>
  <p class="hint">Fotos bleiben nur auf diesem Gerät (verkleinert gespeichert) und werden mit der Lage gedruckt und gesichert.</p></dialog>
-<dialog id="dScan"><h2>Ausweis scannen</h2><p id="scanState" class="hint"></p><div id="scanRes" class="pgrid"></div>
- <p class="hint">Rückseite des Personalausweises fotografieren: gerade, formatfüllend, ohne Spiegelung. Die Auswertung läuft nur auf diesem Gerät, das Foto wird nicht gespeichert. Nur mit Einverständnis der Person verwenden.</p>
+<dialog id="dScan"><h2>Ausweis scannen</h2><p id="scanStep"></p>
+ <div class="row"><button class="pri" id="scanShoot">Vorderseite fotografieren</button><button class="ghost fix" id="scanSkip">Überspringen</button></div>
+ <p id="scanState" class="hint"></p><div id="scanRes" class="pgrid"></div>
+ <p class="hint">Gerade, formatfüllend und ohne Spiegelung fotografieren. Die Auswertung läuft nur auf diesem Gerät, die Fotos werden nicht gespeichert. Nur mit Einverständnis der Person verwenden.</p>
  <div class="row" style="margin-top:8px"><button class="pri" id="scanOk" disabled>Übernehmen</button><button class="ghost fix" onclick="this.closest('dialog').close()">Abbrechen</button></div></dialog>
 <input id="scanFile" type="file" accept="image/*" capture="environment" hidden>
 <div id="toast" aria-live="polite"></div>
@@ -758,21 +760,51 @@ function adrParse(raw){const L=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean)
  for(let i=0;i<L.length;i++){const m=L[i].match(/(?:^|\s)(\d{5})\s+([A-ZÄÖÜa-zäöüß][A-ZÄÖÜa-zäöüß .\-/()]+)$/);if(m&&!/</.test(L[i])){r.plz=m[1];r.ort2=capW(m[2].trim());
   const c=[L[i+1],L[i-1]].filter(Boolean).find(s=>/[A-ZÄÖÜa-zäöüß]{3,}.*\d/.test(s)&&!/</.test(s)&&!/\d{5}/.test(s));if(c)r.str=capW(c.replace(/^[^A-ZÄÖÜa-zäöü]+/,'').trim());break}}return r}
 let tessP=null;function loadTess(){return tessP||(tessP=new Promise((ok,no)=>{if(window.Tesseract)return ok(window.Tesseract);const s=document.createElement('script');s.src='ocr/tesseract.min.js';s.onload=()=>ok(window.Tesseract);s.onerror=()=>{tessP=null;no(new Error('Texterkennung konnte nicht geladen werden'))};document.head.append(s)}))}
-async function ocrId(file,step){const T=await loadTess();const img=await imgToJpeg(file,2000,.9);const opt=l=>({workerPath:'ocr/worker.min.js',corePath:'ocr/',langPath:'ocr/lang',gzip:true,workerBlobURL:false});
- step('Maschinenlesbare Zone wird gelesen …');let w=await T.createWorker('eng',1,opt());await w.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',tessedit_pageseg_mode:'6'});
+const ocrOpt=()=>({workerPath:'ocr/worker.min.js',corePath:'ocr/',langPath:'ocr/lang',gzip:true,workerBlobURL:false});
+function frontParse(raw){const L=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean),r={};const up=s=>(s.match(/[A-ZÄÖÜ][A-ZÄÖÜß'\- ]+[A-ZÄÖÜß]/)||[''])[0].trim();
+ for(let i=0;i<L.length-1;i++){const l=L[i];
+  if(!r.nach&&/(^|[\s/])Name\s*\/\s*Surname/i.test(l)&&!/Geburtsname/i.test(l)){const v=up(L[i+1]);if(v)r.nach=capW(v)}
+  if(!r.vor&&/Vorname|Given name/i.test(l)){const v=up(L[i+1]);if(v)r.vor=capW(v)}
+  if(!r.geb&&/Geburtstag|Date of birth/i.test(l)){const m=(L[i+1]+' '+l).match(/(\d{2})[.,](\d{2})[.,](\d{4})/);if(m)r.geb=`${m[1]}.${m[2]}.${m[3]}`}}
+ if(!r.geb){const y=new Date().getFullYear();const ds=[...raw.matchAll(/(\d{2})[.,](\d{2})[.,](\d{4})/g)].filter(m=>+m[3]<y&&+m[3]>1900).sort((a,b)=>a[3]-b[3]);if(ds[0])r.geb=`${ds[0][1]}.${ds[0][2]}.${ds[0][3]}`}
+ return r}
+// Umlaute aus der MRZ (AE/OE/UE) wiederherstellen, wenn die Vorderseite sie verloren hat
+function umlautFix(front,mrz){if(!front||!mrz)return front;const F=front.toUpperCase(),M=mrz.toUpperCase(),U={A:'Ä',O:'Ö',U:'Ü'};let i=0,j=0,o='';
+ while(i<F.length&&j<M.length){if(F[i]===M[j]&&U[F[i]]&&M[j+1]==='E'&&F[i+1]!=='E'){o+=U[F[i]];i++;j+=2}else if(F[i]===M[j]||(F[i]===' '&&M[j]===' ')){o+=F[i];i++;j++}else return front}
+ return i===F.length&&j===M.length?capW(o):front}
+async function ocrFront(file,step){const T=await loadTess();const img=await imgToJpeg(file,2000,.9);step('Vorderseite wird gelesen …');
+ const w=await T.createWorker('deu',1,ocrOpt());const t=(await w.recognize(img,{rotateAuto:true})).data.text;await w.terminate();return {...frontParse(t),raw:t}}
+async function ocrBack(file,step){const T=await loadTess();const img=await imgToJpeg(file,2000,.9);
+ step('Maschinenlesbare Zone wird gelesen …');let w=await T.createWorker('eng',1,ocrOpt());await w.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',tessedit_pageseg_mode:'6'});
  const a=(await w.recognize(img,{rotateAuto:true})).data.text;await w.terminate();
- step('Anschrift wird gelesen …');w=await T.createWorker('deu',1,opt());const b=(await w.recognize(img,{rotateAuto:true})).data.text;await w.terminate();
- return {...adrParse(b),...mrzParse(a),raw:a+'\n---\n'+b}}
+ step('Anschrift wird gelesen …');w=await T.createWorker('deu',1,ocrOpt());const b=(await w.recognize(img,{rotateAuto:true})).data.text;await w.terminate();
+ return {adr:adrParse(b),mrz:mrzParse(a),raw:a+'\n---\n'+b}}
 const SCF=[['nach','Nachname'],['vor','Vorname'],['geb','Geburtsdatum'],['str','Straße, Hausnr.'],['plz','PLZ'],['ort2','Wohnort']];
-let scanRef=null;
-$('persList').addEventListener('click',e=>{const b=e.target.closest('[data-scan]');if(!b)return;scanRef=b.dataset.scan;$('scanFile').click()});
-$('scanFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!scanRef)return;
- $('scanRes').innerHTML='';$('scanOk').disabled=true;$('scanState').textContent='Texterkennung wird vorbereitet … (beim ersten Mal werden ca. 8 MB geladen)';$('dScan').showModal();
- try{const r=await ocrId(f,t=>$('scanState').textContent=t);const n=SCF.filter(([k])=>r[k]).length;
-  $('scanState').textContent=n?`${n} von 6 Feldern erkannt – bitte prüfen und korrigieren.`:'Nichts erkannt. Rückseite gerade, formatfüllend und ohne Spiegelung fotografieren.';
-  $('scanRes').innerHTML=SCF.map(([k,l])=>`<label>${l}<input data-sf="${k}" value="${esc(r[k]||'')}"></label>`).join('')+`<details><summary class="hint">Erkannter Rohtext</summary><pre style="white-space:pre-wrap;font-size:12px">${esc(r.raw)}</pre></details>`;$('scanOk').disabled=false}
- catch(x){$('scanState').textContent='Fehler: '+(x.message||x)+'. Beim ersten Scan wird eine Internetverbindung benötigt.'}};
-$('scanOk').onclick=()=>{const rec=recOf(scanRef);$('scanRes').querySelectorAll('[data-sf]').forEach(i=>{if(i.value.trim())rec[i.dataset.sf]=i.value.trim()});save();$('dScan').close();renderPers();toast('Daten übernommen')};
+let scanRef=null,scan={st:1,r:{},raw:'',note:''};
+function scanSync(){$('scanRes').querySelectorAll('[data-sf]').forEach(i=>scan.r[i.dataset.sf]=i.value.trim())}
+function scanUI(msg){const st=scan.st;
+ $('scanStep').innerHTML=st===1?'<b>Schritt 1 von 2: Vorderseite</b> – Nachname, Vorname, Geburtsdatum':st===2?'<b>Schritt 2 von 2: Rückseite</b> – Anschrift (die maschinenlesbare Zone dient zur Kontrolle)':'<b>Fertig</b> – bitte prüfen und übernehmen';
+ $('scanShoot').hidden=$('scanSkip').hidden=st>2;$('scanShoot').textContent=st===1?'Vorderseite fotografieren':'Rückseite fotografieren';
+ if(msg!==undefined)$('scanState').textContent=msg;
+ $('scanRes').innerHTML=SCF.map(([k,l])=>`<label>${l}<input data-sf="${k}" value="${esc(scan.r[k]||'')}"></label>`).join('')+(scan.note?`<p class="hint" style="grid-column:1/-1;color:var(--red)">${esc(scan.note)}</p>`:'')+(scan.raw?`<details style="grid-column:1/-1"><summary class="hint">Erkannter Rohtext</summary><pre style="white-space:pre-wrap;font-size:12px">${esc(scan.raw)}</pre></details>`:'');
+ $('scanOk').disabled=!SCF.some(([k])=>scan.r[k])}
+$('persList').addEventListener('click',e=>{const b=e.target.closest('[data-scan]');if(!b)return;scanRef=b.dataset.scan;scan={st:1,r:{},raw:'',note:''};scanUI('');$('dScan').showModal()});
+$('scanShoot').onclick=()=>{scanSync();$('scanFile').click()};
+$('scanSkip').onclick=()=>{scanSync();scan.st++;scanUI('')};
+$('scanRes').oninput=()=>{scanSync();$('scanOk').disabled=!SCF.some(([k])=>scan.r[k])};
+$('scanFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;$('scanShoot').disabled=$('scanSkip').disabled=true;
+ const step=t=>$('scanState').textContent=t;step('Texterkennung wird vorbereitet … (beim ersten Mal werden ca. 8 MB geladen)');
+ try{if(scan.st===1){const r=await ocrFront(f,step);for(const k of ['nach','vor','geb'])if(r[k])scan.r[k]=r[k];scan.raw=r.raw;const n=['nach','vor','geb'].filter(k=>r[k]).length;scan.st=2;
+   scanUI(n?`Vorderseite: ${n} von 3 Feldern erkannt. Jetzt die Rückseite fotografieren.`:'Vorderseite: nichts erkannt. Neu fotografieren (gerade, formatfüllend, ohne Spiegelung) oder überspringen.');if(!n)scan.st=1,scanUI()}
+  else{const {adr,mrz,raw}=await ocrBack(f,step);scan.raw=(scan.raw?scan.raw+'\n=== Rückseite ===\n':'')+raw;for(const k of ['str','plz','ort2'])if(adr[k])scan.r[k]=adr[k];const notes=[];
+   if(mrz.nach){if(!scan.r.nach)scan.r.nach=mrz.nach;else scan.r.nach=umlautFix(scan.r.nach,mrz.nach)}
+   if(mrz.vor){if(!scan.r.vor)scan.r.vor=mrz.vor;else scan.r.vor=umlautFix(scan.r.vor,mrz.vor)}
+   if(mrz.geb){if(scan.r.geb&&scan.r.geb!==mrz.geb)notes.push(`Geburtsdatum Vorderseite (${scan.r.geb}) weicht von der geprüften MRZ ab – MRZ-Wert ${mrz.geb} übernommen.`);scan.r.geb=mrz.geb}
+   scan.note=notes.join(' ');scan.st=3;const n=['str','plz','ort2'].filter(k=>adr[k]).length;
+   scanUI(`Rückseite: ${n} von 3 Anschriftfeldern erkannt${mrz.geb?', MRZ geprüft':''}. Bitte alle Werte prüfen.`)}}
+ catch(x){scanUI('Fehler: '+(x.message||x)+'. Beim ersten Scan wird eine Internetverbindung benötigt.')}
+ finally{$('scanShoot').disabled=$('scanSkip').disabled=false}};
+$('scanOk').onclick=()=>{scanSync();const rec=recOf(scanRef);SCF.forEach(([k])=>{if(scan.r[k])rec[k]=scan.r[k]});save();$('dScan').close();renderPers();toast('Daten übernommen')};
 
 // Export
 function sheetSVG(s,px){const b=bbox(s.items),pad=40,x=b.x-pad,y=b.y-pad,w=Math.max(b.width+2*pad,200),h=Math.max(b.height+2*pad,150);
