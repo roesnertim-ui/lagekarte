@@ -90,7 +90,7 @@ button.del{color:var(--red)}
  #print table{font-size:9.5pt}#print td,#print th{border:1px solid #888;padding:3pt 4pt;color:#000}#print img{max-width:100%;max-height:120mm;border:1px solid #888}
  #print tr{break-inside:avoid}#print .sheet{break-before:page}#print .sheet svg{width:100%;height:auto;max-height:235mm;border:1px solid #888}#print svg text{font-family:Arial,sans-serif}}
 
-.props input[type=range]{flex:1 1 140px;min-height:36px;padding:0;border:0;background:none;accent-color:#d00000}.szl{font-size:13px;color:var(--mute)}.num{min-width:3.5em;text-align:right}
+.props input[type=range]{flex:1 1 140px;min-height:36px;padding:0;border:0;background:none;accent-color:#d00000}.szl{font-size:13px;color:var(--mute)}.grp{display:inline-flex;gap:4px;align-items:center;flex:0 0 auto}.grp input{flex:0 0 64px!important;width:64px;text-align:center;min-height:36px;padding:4px}.num{min-width:3.5em;text-align:right}
 
 header.lk{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:calc(6px + env(safe-area-inset-top)) 10px 6px}
 header.lk h1{font-size:17px;margin:0;flex:0 0 auto}
@@ -286,7 +286,7 @@ function rItem(it,i){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotat
   if(m)s+=halo(m[0],m[1]-12,it.l,22,it.k==='hose'?'#0050c8':c);break}
  case 'zone':s=`<circle cx="${it.x}" cy="${it.y}" r="${r1(it.r)}" fill="#e00000" fill-opacity=".07" stroke="#e00000" stroke-width="3" stroke-dasharray="14 10"/>`+halo(it.x,it.y-it.r-10,it.l,24,'#c00000');break;
  case 'text':s=`<g transform="${tf}">${halo(0,0,it.l||' ',26,PEN[it.c]||'#111','start')}</g>`;break;
- case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);s=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/></g>`+halo(it.x,it.y+z*.4+22,it.l,22);break}
+ case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);s=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.n?+it.n:''}${it.m==='?'||it.m==='!'?it.m:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,it.l,22);break}
  case 'obj':{const O=OBJ[it.k];if(!O)break;s=`<g transform="${tf}">${O[1]}</g>`+halo(it.x,it.y+(it.k==='hyd'?44:it.k==='pkw'||it.k==='krad'?60:72)*(it.s||1),it.l,20);break}
  case 'img':s=`<image href="${it.src}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" opacity="${it.op||.8}" preserveAspectRatio="none"/>`;break}
  return `<g data-i="${i}"${it.lock?' pointer-events="none"':''}>${s}</g>`}
@@ -306,12 +306,14 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
 function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
  const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände'}[it.k],zone:'Bereich',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
+ +(it.t==='sym'&&SYM[it.k].c==='Personen'?`<span class="grp"><span class="szl">Anzahl</span><button class="sm" data-a="n-" aria-label="Anzahl verringern">−</button><input id="pN" type="number" min="0" max="999" inputmode="numeric" pattern="[0-9]*" value="${it.n||''}" placeholder="–" aria-label="Anzahl"><button class="sm" data-a="n+" aria-label="Anzahl erhöhen">+</button></span><span class="grp"><span class="szl">Status</span><button class="sm${!it.m?' on':''}" data-a="m0">–</button><button class="sm${it.m==='?'?' on':''}" data-a="m?">? vermutet</button><button class="sm${it.m==='!'?' on':''}" data-a="m!">! bestätigt</button></span>`:'')
  +(SCAL.includes(it.t)?`<span class="szl">Größe</span><button class="sm" data-a="s-" aria-label="Kleiner">−</button><input id="pS" type="range" min="20" max="600" step="5" value="${Math.round((it.s||1)*100)}" aria-label="Größe"><span id="pSv" class="szl num">${Math.round((it.s||1)*100)} %</span><button class="sm" data-a="s+" aria-label="Größer">+</button>`:'')
  +(ROT.includes(it.t)&&it.t!=='img'?'<button class="sm" data-a="r-">⟲ 15°</button><button class="sm" data-a="r+">⟳ 15°</button><button class="sm" data-a="r90">90°</button>':'')
  +(it.t==='door'?'<button class="sm" data-a="flip">Aufschlag wechseln</button>':'')
  +(STRK.includes(it.t)?'<button class="sm" data-a="w-">Dünner</button><button class="sm" data-a="w+">Dicker</button>':'')
  +(it.t==='text'||(it.t==='line'&&['arrow','free'].includes(it.k))?Object.keys(PEN).map(k=>`<button class="sm dot" data-a="c-${k}" style="background:${PEN[k]}" aria-label="Farbe"></button>`).join(''):'')
  +'<button class="sm" data-a="dup">Duplizieren</button><button class="sm" data-a="lock">Fixieren</button><button class="sm del" data-a="del">Löschen</button>';
+ const N=$('pN');if(N){N.onfocus=()=>snap();N.oninput=()=>{const v=parseInt(N.value,10);it.n=v>0?Math.min(v,999):0;renderMap();saveSoon()}}
  const S=$('pS');if(S){S.onpointerdown=S.onkeydown=()=>{if(!S.dataset.u){snap();S.dataset.u=1}};S.oninput=()=>{it.s=S.value/100;$('pSv').textContent=S.value+' %';renderMap();saveSoon()};S.onchange=()=>{delete S.dataset.u;save()}}
  const L=$('pL');if(L){L.onfocus=()=>snap();L.oninput=()=>{it.l=L.value;renderMap();saveSoon()}}}
 function syncS(){const s=sh(),it=s&&s.items[sel],S=$('pS');if(it&&S){S.value=Math.round((it.s||1)*100);$('pSv').textContent=S.value+' %'}}
@@ -393,6 +395,8 @@ $('props').onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a,s=sh(),it
  if(a==='flip')it.f=-(it.f||1);
  if(a==='w-'||a==='w+'){const key=it.t==='room'?'sw':'w',d={wall:10,room:6,line:4}[it.t];it[key]=Math.max(1,Math.min(40,(it[key]||d)+(a==='w+'?2:-2)))}
  if(a.startsWith('c-'))it.c=a.slice(2);
+ if(a==='n+')it.n=Math.min(999,(+it.n||0)+1);if(a==='n-')it.n=Math.max(0,(+it.n||0)-1);
+ if(a==='m0')delete it.m;if(a==='m?')it.m='?';if(a==='m!')it.m='!';
  if(a==='dup'){const c=JSON.parse(JSON.stringify(it));shift(c,JSON.parse(JSON.stringify(it)),40,40);s.items.push(c);sel=s.items.length-1}
  if(a==='lock'){it.lock=1;sel=-1;toast('Fixiert. Lösen über „Blatt …“')}
  if(a==='del'){s.items.splice(sel,1);sel=-1}
