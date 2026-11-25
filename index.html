@@ -103,6 +103,12 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 #toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;display:grid;gap:6px;pointer-events:none}
 #toast div{background:#16191c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 #print .sheet:first-child{break-before:auto}
+.tabs{display:inline-flex;gap:4px;flex:0 0 auto}.tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#s-pers.on{display:block;flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 2px 24px}
+.pbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:4px}
+.pcard{background:var(--panel);border:1px solid var(--line);border-left:8px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.phead{display:flex;gap:10px;align-items:center;margin-bottom:6px}.phead>div{flex:1 1 auto}.phead img{width:44px;height:44px;background:#fff;border-radius:6px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 10px}.pgrid label{margin:0;font-size:12px}.pgrid input,.pgrid select{min-height:38px;padding:5px 8px;margin-top:2px}
 @media screen{
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{display:flex;flex-direction:column;height:100vh;height:100dvh}
@@ -124,6 +130,7 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
 <body>
 <header class="lk">
  <h1>Lagekarte</h1>
+ <span class="tabs"><button class="sm on" id="tabMap">Karte</button><button class="sm" id="tabPers">Personen<span id="tabPersN"></span></button></span>
  <input id="docName" aria-label="Name der Lage" placeholder="Name der Lage">
  <button class="sm" id="docMenu">Lagen …</button>
  <button class="sm" id="docPrint">Drucken / PDF</button>
@@ -141,6 +148,11 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
  </div>
  
 
+</section>
+<section id="s-pers">
+ <div class="pbar"><button class="sm pri" id="persAdd">+ Person ohne Zeichen</button><select id="pFlt" aria-label="Filter" style="width:auto;min-height:40px"><option value="">Alle Personen</option><option value="verletzt">Verletzte</option><option value="vermisst">Vermisste</option><option value="verschüttet">Verschüttete</option><option value="tot">Tote</option><option value="gerettet">Gerettete</option><option value="transport">Transport</option><option value="sk">mit Sichtung</option></select><button class="sm" id="persPrint">Personenliste drucken</button></div>
+ <p class="hint">Personenbezogene Daten bleiben nur auf diesem Gerät. Nach Abschluss des Einsatzes und Übergabe der Daten die Lage löschen. Die Lagekarte druckt keine Namen, die Personenliste wird getrennt gedruckt.</p>
+ <div id="persList"></div>
 </section>
 </main>
 <dialog id="dPal"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Zeichen wählen</h2><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
@@ -297,7 +309,7 @@ const OBJDEF=Object.entries(OBJ).map(([k,[n]])=>[k,n]);
 const PEN={r:'#d00000',b:'#0050c8',k:'#111111',g:'#08803a'};
 const MARK=Object.entries(PEN).map(([k,c])=>`<marker id="m-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`).join('');
 const GRID='<pattern id="g1" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#e4e8eb" stroke-width="1"/></pattern><pattern id="g5" width="200" height="200" patternUnits="userSpaceOnUse"><rect width="200" height="200" fill="url(#g1)"/><path d="M200 0H0V200" fill="none" stroke="#c9d0d6" stroke-width="1.5"/></pattern>';
-const TOOLS=[['sel','Auswahl'],['wall','Wand'],['room','Raum'],['door','Tür'],['win','Fenster'],['stair','Treppe'],['arrow','Pfeil'],['hose','Schlauch'],['rail','Gleis'],['barrier','Absperrung'],['zone','Bereich'],['free','Freihand'],['text','Text'],['pal','Zeichen …']];
+const TOOLS=[['sel','Auswahl'],['wall','Wand'],['room','Raum'],['door','Tür'],['win','Fenster'],['stair','Treppe'],['arrow','Pfeil'],['lead','Zeigelinie'],['hose','Schlauch'],['rail','Gleis'],['barrier','Absperrung'],['zone','Bereich'],['free','Freihand'],['text','Text'],['pal','Zeichen …']];
 const LBL={door:0,win:0,wall:0,img:0};
 const SCAL=['sym','obj','door','win','stair','text'],ROT=['sym','obj','door','win','stair','text','img'],STRK=['wall','room','line'];
 
@@ -332,6 +344,7 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
   else if(it.k==='sect')s=`<path d="${d}Z" fill="${it.fc||'#ed7d31'}" fill-opacity="${it.op||.3}" stroke="none"/>`;
   else if(it.k==='yarrow'||it.k==='flowbig'){const F=it.k==='flowbig',A=fat(it.pts[0],it.pts[it.pts.length-1],F?110:90,F?220:170,F?160:110);
    s=`<path d="${A.d}" fill="${F?'#fff':'#ffff00'}" stroke="${F?'#111':'#1f4fd1'}" stroke-width="3"${F?'':' stroke-dasharray="10 6"'}/><text transform="translate(${r1(A.mx)},${r1(A.my)}) rotate(${r1(A.ang)})" text-anchor="middle" dominant-baseline="central" font-family="Arial,Helvetica,sans-serif" font-weight="bold" font-size="${F?46:36}" fill="${F?'#111':'#1f4fd1'}">${esc(it.l||'')}</text>`;break}
+  else if(it.k==='leader'){const b2=it.pts[it.pts.length-1];s+=`<path d="${d}" fill="none" stroke="#222" stroke-width="${it.w||2.5}"/><circle cx="${r1(b2[0])}" cy="${r1(b2[1])}" r="6" fill="#222"/>`}
   else if(it.k==='bound')s+=`<path d="${d}" fill="none" stroke="#111" stroke-width="${it.w||3}" stroke-dasharray="16 8"/>`;
   else if(it.k==='water')s=`<path d="${d}Z" fill="${it.fc||'#cfe6f7'}" stroke="#7fb3d9" stroke-width="2"/>`;
   else if(it.k==='bank')s+=`<path d="${d}" fill="none" stroke="#4a6b3a" stroke-width="${it.w||6}" stroke-linecap="round"/>`;
@@ -364,7 +377,7 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
  if(it.t==='line'&&it.pts.length===2)o+=H(...it.pts[0],'l0')+H(...it.pts[1],'l1');
  $('ov').innerHTML=o}
 function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
- const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
+ const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',leader:'Zeigelinie',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
  +(isP(it)?(()=>{const vs=targets(s.items);return `<span class="grp"><span class="szl">Ort / Fahrzeug</span><select id="pV" style="width:auto;max-width:220px;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(tgKind(x)+': '+tgName(x))}${x.id===it.v&&it.va?' (auto)':''}</option>`).join('')}<option value="txt"${it.vt?' selected':''}>Freitext …</option></select>${it.vt!==undefined?`<input id="pVt" value="${esc(it.vt||'')}" placeholder="z. B. Wohnung links" style="flex:0 0 170px;min-height:36px">`:''}</span>`})():'')
  +(it.t==='sym'&&SYM[it.k].c==='Personen'?`<span class="grp"><span class="szl">Anzahl</span><button class="sm" data-a="n-" aria-label="Anzahl verringern">−</button><input id="pN" type="number" min="0" max="999" inputmode="numeric" pattern="[0-9]*" value="${it.n||''}" placeholder="–" aria-label="Anzahl"><button class="sm" data-a="n+" aria-label="Anzahl erhöhen">+</button></span><span class="grp"><span class="szl">Status</span><button class="sm${!it.m?' on':''}" data-a="m0">–</button><button class="sm${it.m==='?'?' on':''}" data-a="m?">? vermutet</button><button class="sm${it.m==='!'?' on':''}" data-a="m!">! bestätigt</button></span>`:'')
@@ -429,11 +442,12 @@ map.onpointerdown=e=>{if(!need())return;
   case 'room':n={t:'room',x:q.x,y:q.y,w:0,h:0,l:'',sw:6};break;
   case 'zone':n={t:'zone',x:r1(p.x),y:r1(p.y),r:0,l:'Gefahrenbereich'};break;
   case 'arrow':case 'hose':case 'barrier':case 'rail':case 'free':n={t:'line',k:tool,pts:[[r1(p.x),r1(p.y)]],c:pen,l:''};break;
+  case 'lead':n={t:'line',k:'leader',pts:[[r1(p.x),r1(p.y)],[r1(p.x),r1(p.y)]],c:'k',l:''};break;
   case 'door':n={t:'door',x:q.x,y:q.y,r:0,s:1,f:1};break;case 'win':n={t:'win',x:q.x,y:q.y,r:0,s:1};break;
   case 'stair':n={t:'stair',x:q.x,y:q.y,r:0,s:1};break;case 'text':n={t:'text',x:r1(p.x),y:r1(p.y),r:0,s:1,l:'Text',c:pen};break;
   case 'place':if(VEH.includes(placing)){const c=items().filter(x=>x.t==='obj'&&VEH.includes(x.k)).length;n={t:'obj',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:'Fzg '+String.fromCharCode(65+c%26)+(c>=26?Math.floor(c/26)+1:''),id:uid()};break}
   n=SYM[placing]?{t:'sym',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:''}:{t:'obj',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:placing==='hyd'?'UH':''};break}
- if(!n){undo.pop();return}if(n.t==='door'||n.t==='win')snapOpening(n,p);items().push(n);sel=items().length-1;act={type:'create',p0:q};renderMap()};
+ if(!n){undo.pop();return}if(n.t==='door'||n.t==='win')snapOpening(n,p);items().push(n);sel=items().length-1;act={type:'create',p0:q,src:n.k==='leader'?personAt(p):null};renderMap()};
 map.onpointermove=e=>{if(!ptrs.has(e.pointerId))return;e.preventDefault();ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(pinch&&ptrs.size===2){const[a,b]=[...ptrs.values()],f=pinch.d/Math.max(dist(a,b),1),w=Math.min(Math.max(pinch.vb.w*f,150),20000),h=w*pinch.vb.h/pinch.vb.w;
   vb={x:pinch.m.x-(pinch.m.x-pinch.vb.x)*w/pinch.vb.w,y:pinch.m.y-(pinch.m.y-pinch.vb.y)*h/pinch.vb.h,w,h};setVB();return}
@@ -446,7 +460,7 @@ map.onpointermove=e=>{if(!ptrs.has(e.pointerId))return;e.preventDefault();ptrs.s
   case 'wall':{let x=q.x,y=q.y;const dx=Math.abs(x-it.x1),dy=Math.abs(y-it.y1);if(dy<dx*.2)y=it.y1;else if(dx<dy*.2)x=it.x1;it.x2=x;it.y2=y;break}
   case 'room':it.x=Math.min(act.p0.x,q.x);it.y=Math.min(act.p0.y,q.y);it.w=Math.abs(q.x-act.p0.x);it.h=Math.abs(q.y-act.p0.y);break;
   case 'zone':it.r=r1(dist(p,it));break;
-  case 'line':{let evs=[];try{evs=e.getCoalescedEvents?e.getCoalescedEvents():[]}catch(x){}if(!evs.length)evs=[e];const m=.8*pxW();
+  case 'line':{if(it.k==='leader'){it.pts[1]=[r1(p.x),r1(p.y)];break}let evs=[];try{evs=e.getCoalescedEvents?e.getCoalescedEvents():[]}catch(x){}if(!evs.length)evs=[e];const m=.8*pxW();
    for(const v of evs){const w=toW(v.clientX,v.clientY),l=it.pts[it.pts.length-1];if(Math.hypot(w.x-l[0],w.y-l[1])>m)it.pts.push([r1(w.x),r1(w.y)])}break}
   default:if(it.t==='sym'||it.t==='obj'||it.t==='text'){it.x=r1(p.x);it.y=r1(p.y)}else if((it.t==='door'||it.t==='win')&&snapOpening(it,p)){}else{it.x=q.x;it.y=q.y}}upd(sel)}};
 map.onpointerup=map.onpointercancel=e=>{if(e.pointerId===penId)penId=null;if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2){pinch=null;renderMap()}act=null;saveVb();return}
@@ -455,7 +469,10 @@ map.onpointerup=map.onpointercancel=e=>{if(e.pointerId===penId)penId=null;if(!pt
   if(it.t==='wall')bad=Math.hypot(it.x2-it.x1,it.y2-it.y1)<20;
   if(it.t==='room')bad=it.w<20||it.h<20;
   if(it.t==='zone'&&it.r<20)it.r=120;
-  if(it.t==='line'){if(it.pts.length<2)bad=true;else it.pts=it.k==='free'?rdp(it.pts,.35*pxW()):rdp(it.pts,(it.k==='barrier'?6:2.5)*pxW())}
+  if(it.t==='line'&&it.k==='leader'){const[a,b2]=it.pts,P=act.src,T=P&&targetAt({x:b2[0],y:b2[1]});
+   if(P&&T){items().pop();if(!T.id)T.id=uid();P.v=T.id;delete P.va;delete P.vt;sel=items().indexOf(P);save();act=null;render();toast('Zugeordnet: '+tgName(T));return}
+   bad=Math.hypot(b2[0]-a[0],b2[1]-a[1])<20*pxW()}
+  else if(it.t==='line'){if(it.pts.length<2)bad=true;else it.pts=it.k==='free'?rdp(it.pts,.35*pxW()):rdp(it.pts,(it.k==='barrier'?6:2.5)*pxW())}
   if(bad){items().pop();undo.pop();sel=-1}
   if(!bad)autoAssign(it,items());
   if(!bad&&['wall','room','door','win','stair','line','zone'].includes(it?.t))sel=-1;
@@ -630,6 +647,47 @@ function rhBuild(){const c0=rhIn();if(!c0.ok){toast('Rhein-km des Ereignisorts f
   TA(800,100,org[0],.9,'middle'),TA(800,135,org[1],.9,'middle'));
  return it}
 
+// ===== Zeigelinie: Ziel unter einem Punkt =====
+const VDIM={pkw:[90,38],lkw:[210,58],bus:[240,50],krad:[46,26],lok:[380,58],wagen:[534,58]};
+function personAt(p){const L=items();for(let i=L.length-1;i>=0;i--){const x=L[i];if(isP(x)){const h=55*(x.s||1);if(Math.abs(p.x-x.x)<=h&&Math.abs(p.y-x.y)<=h)return x}}return null}
+function targetAt(p){const c=[];for(const x of items()){
+  if(x.t==='obj'&&VDIM[x.k]){const a=-(x.r||0)*Math.PI/180,dx=p.x-x.x,dy=p.y-x.y,s=x.s||1,lx=(dx*Math.cos(a)-dy*Math.sin(a))/s,ly=(dx*Math.sin(a)+dy*Math.cos(a))/s,[hw,hh]=VDIM[x.k];
+   if(Math.abs(lx)<=hw+10&&Math.abs(ly)<=hh+10)c.push([x,4*hw*hh*s*s])}
+  else if((x.t==='room'||x.t==='zone')&&x.l&&inside(x,p))c.push([x,x.t==='room'?x.w*x.h:Math.PI*x.r*x.r])}
+ c.sort((a,b)=>a[1]-b[1]);return c.length?c[0][0]:null}
+
+// ===== Reiter Personen =====
+const SKS=[['','–'],['I','SK I (rot)'],['II','SK II (gelb)'],['III','SK III (grün)'],['IV','SK IV (blau)'],['ex','tot']];
+const SKC={I:'#d00000',II:'#e0b000',III:'#1d8a3a',IV:'#1d5fbf',ex:'#111'};
+const PF=[['name','Name, Vorname'],['geb','Geburtsdatum'],['adr','Anschrift'],['tel','Telefon'],['verl','Verletzungen / Zustand'],['trans','Transport / Verbleib'],['bem','Bemerkung']];
+function persRows(){const o=op();if(!o)return[];const R=[];(o.maps||[]).forEach((m,mi)=>m.items.forEach((it,ii)=>{if(!isP(it))return;const n=Math.max(1,+it.n||1);it.pp=it.pp||[];
+  for(let k=0;k<n;k++){it.pp[k]=it.pp[k]||{};const V=it.v?m.items.find(x=>x.id===it.v):null;R.push({ref:`m:${mi}:${ii}:${k}`,rec:it.pp[k],art:SYM[it.k].n,st:it.m||'',k,n,sheet:m.name,ort:V?tgName(V):it.vt||'',lbl:it.l||'',uri:SYM[it.k].uri,mi,ii})}}));
+ (o.extra=o.extra||[]).forEach((r,j)=>R.push({ref:`x:${j}`,rec:r,art:r.art||'Person (ohne Zeichen)',st:'',k:0,n:1,sheet:'',ort:r.ort||'',lbl:'',uri:SYM.p.uri,extra:1,j}));return R}
+function recOf(ref){const o=op(),a=ref.split(':');if(a[0]==='x')return o.extra[+a[1]];const it=o.maps[+a[1]].items[+a[2]];it.pp=it.pp||[];return it.pp[+a[3]]=it.pp[+a[3]]||{}}
+function renderPers(){const R=persRows(),f=$('pFlt').value;$('tabPersN').textContent=R.length?` (${R.length})`:'';
+ const L=R.filter(r=>!f||(f==='sk'?r.rec.sk:r.art.toLowerCase().includes(f)));
+ $('persList').innerHTML=L.length?L.map(r=>`<div class="pcard" style="border-left-color:${SKC[r.rec.sk]||'var(--line)'}"><div class="phead"><img src="${r.uri}" alt=""><div><b>${esc(r.art)}${r.st?' '+esc(r.st):''}${r.n>1?` – Nr. ${r.k+1} von ${r.n}`:''}</b><div class="hint">${esc([r.sheet&&'Blatt '+r.sheet,r.ort&&'Ort: '+r.ort,r.lbl].filter(Boolean).join(' · ')||'–')}</div></div>
+  ${r.extra?`<button class="sm ghost del" data-xdel="${r.j}">Entfernen</button>`:`<button class="sm" data-go="${r.mi}:${r.ii}">Auf Karte</button>`}</div>
+  <div class="pgrid">${r.extra?`<label>Ort<input data-ref="${r.ref}" data-f="ort" value="${esc(r.rec.ort||'')}"></label>`:''}${PF.map(([k,n])=>`<label>${n}<input data-ref="${r.ref}" data-f="${k}" value="${esc(r.rec[k]||'')}"${k==='geb'?' inputmode="numeric" placeholder="TT.MM.JJJJ"':k==='tel'?' inputmode="tel"':''}></label>`).join('')}
+  <label>Sichtung<select data-ref="${r.ref}" data-f="sk">${SKS.map(([v,n])=>`<option value="${v}"${(r.rec.sk||'')===v?' selected':''}>${n}</option>`).join('')}</select></label></div></div>`).join('')
+  :'<p class="empty">Noch keine Personen. Personenzeichen auf der Karte setzen oder „+ Person ohne Zeichen“.</p>'}
+$('persList').oninput=e=>{const t=e.target;if(!t.dataset.ref)return;recOf(t.dataset.ref)[t.dataset.f]=t.value;if(t.dataset.f==='sk')t.closest('.pcard').style.borderLeftColor=SKC[t.value]||'var(--line)';saveSoon()};
+$('persList').onchange=$('persList').oninput;
+$('persList').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.go){const[mi,ii]=b.dataset.go.split(':').map(Number);showTab('map');openSheet(mi);sel=ii;const it=items()[ii];vb.x=it.x-vb.w/2;vb.y=it.y-vb.h/2;render();saveVb()}
+ if(b.dataset.xdel!==undefined&&confirm('Person aus der Liste entfernen?')){op().extra.splice(+b.dataset.xdel,1);save();renderPers()}};
+$('pFlt').onchange=renderPers;
+$('persAdd').onclick=()=>{need();op().extra=op().extra||[];op().extra.push({art:'Person (ohne Zeichen)'});save();$('pFlt').value='';renderPers();const c=$('persList').lastElementChild;c?.scrollIntoView({block:'center'});c?.querySelector('input')?.focus()};
+$('persPrint').onclick=()=>{const o=op(),R=persRows();if(!R.length)return toast('Keine Personen erfasst');
+ const td=v=>`<td>${esc(v||'')}</td>`;
+ $('print').innerHTML=`<h1>${esc(o.name)} – Personenliste</h1><p style="margin:0 0 6pt">Stand ${dt(new Date())} · enthält personenbezogene Daten – nur für den Dienstgebrauch</p>
+ <table style="font-size:8.5pt"><tr><th>Nr.</th><th>Art / Status</th><th>Ort / Fahrzeug</th><th>Name, Vorname</th><th>Geb.</th><th>Anschrift</th><th>Telefon</th><th>Sichtung</th><th>Verletzungen / Zustand</th><th>Transport / Verbleib</th><th>Bemerkung</th></tr>
+ ${R.map((r,i)=>`<tr><td>${i+1}</td>${td(r.art+(r.st?' '+r.st:'')+(r.lbl?' – '+r.lbl:''))}${td(r.ort)}${td(r.rec.name)}${td(r.rec.geb)}${td(r.rec.adr)}${td(r.rec.tel)}${td((SKS.find(s=>s[0]===(r.rec.sk||''))||['',''])[1].replace('–',''))}${td(r.rec.verl)}${td(r.rec.trans)}${td(r.rec.bem)}</tr>`).join('')}</table>`;
+ setTimeout(()=>window.print(),50)};
+function showTab(t){$('s-map').classList.toggle('on',t==='map');$('s-pers').classList.toggle('on',t==='pers');$('tabMap').classList.toggle('on',t==='map');$('tabPers').classList.toggle('on',t==='pers');
+ if(t==='pers')renderPers();else{render()}}
+$('tabMap').onclick=()=>showTab('map');$('tabPers').onclick=()=>showTab('pers');
+
 // Export
 function sheetSVG(s,px){const b=bbox(s.items),pad=40,x=b.x-pad,y=b.y-pad,w=Math.max(b.width+2*pad,200),h=Math.max(b.height+2*pad,150);
  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${r1(x)} ${r1(y)} ${r1(w)} ${r1(h)}"${px?` width="${px}" height="${Math.round(px*h/w)}"`:''}><defs>${MARK}</defs><rect x="${r1(x)}" y="${r1(y)}" width="${r1(w)}" height="${r1(h)}" fill="#fff"/>${itemsSVG(s.items)}</svg>`}
@@ -641,7 +699,7 @@ function exportPng(s){if(!s.items.length)return toast('Blatt ist leer');const sv
 
 
 // Lagen verwalten
-function openDoc(id){db.cur=id;save();undo=[];sel=-1;tool='sel';placing=null;$('docName').value=op().name;openSheet(Math.min(op().si||0,sheets().length-1));if(!sh()?.vb)requestAnimationFrame(fit)}
+function openDoc(id){setTimeout(()=>{if($('s-pers').classList.contains('on'))renderPers()});db.cur=id;save();undo=[];sel=-1;tool='sel';placing=null;$('docName').value=op().name;openSheet(Math.min(op().si||0,sheets().length-1));if(!sh()?.vb)requestAnimationFrame(fit)}
 $('docName').oninput=()=>{need();op().name=$('docName').value;saveSoon()};
 function renderDocs(){const l=Object.values(db.docs).sort((a,b)=>(b.created||0)-(a.created||0));
  $('docs').innerHTML=l.length?l.map(o=>`<li><div><b>${esc(o.name||'ohne Namen')}</b>${o.id===db.cur?' <span class="tag t-Meldung">offen</span>':''}<div class="hint">${o.created?dt(new Date(o.created)):''} – ${(o.maps||[]).length} Blätter</div></div><div class="act" style="display:flex;gap:6px;flex-wrap:wrap"><button class="sm" data-op="${esc(o.id)}">Öffnen</button><button class="sm ghost del" data-rm="${esc(o.id)}">Löschen</button></div></li>`).join(''):'<li class="empty">Noch keine Lagen gespeichert.</li>'}
