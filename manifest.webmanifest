@@ -1,0 +1,14 @@
+{
+  "name": "Lagekarte",
+  "short_name": "Lagekarte",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#16191c",
+  "theme_color": "#16191c",
+  "icons": [
+    {"src": "icon-180.png", "sizes": "180x180", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
