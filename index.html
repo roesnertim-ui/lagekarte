@@ -146,7 +146,7 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
 <dialog id="dPal"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Zeichen wählen</h2><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
  <input id="palQ" type="search" placeholder="Suchen, z. B. verletzt, HLF, Gas" style="margin:8px 0"><div id="palL"></div></dialog>
 <dialog id="dNew"><form id="dNewF"><h2>Neues Blatt</h2>
- <label for="nsTpl">Vorlage</label><select id="nsTpl"><option value="leer" data-n="Lageplan">Lageplan (leer, mit Nordpfeil)</option><option value="grundriss" data-n="Grundriss EG">Grundriss (Draufsicht)</option><option value="schnitt" data-n="Schnitt">Gebäudeschnitt</option><option value="strasse" data-n="Unfallstelle">Straße (TH / VU)</option><option value="kreuzung" data-n="Kreuzung">Kreuzung (TH / VU)</option></select>
+ <label for="nsTpl">Vorlage</label><select id="nsTpl"><option value="leer" data-n="Lageplan">Lageplan (leer, mit Nordpfeil)</option><option value="grundriss" data-n="Grundriss EG">Grundriss (Draufsicht)</option><option value="schnitt" data-n="Schnitt">Gebäudeschnitt</option><option value="strasse" data-n="Unfallstelle">Straße (TH / VU)</option><option value="kreuzung" data-n="Kreuzung">Kreuzung (TH / VU)</option><option value="bahn" data-n="Bahnstrecke">Bahnstrecke (2 Gleise, Zug)</option><option value="rhein" data-n="Rhein">Fluss / Rhein (Wasserrettung)</option></select>
  <div id="nsSchnitt" hidden><div class="row"><div><label for="nsN">Geschosse über Gelände</label><input id="nsN" type="number" min="1" max="12" value="3"></div><div><label for="nsD">Dach</label><select id="nsD"><option value="sattel">Satteldach</option><option value="flach">Flachdach</option></select></div></div>
   <label style="display:flex;gap:8px;align-items:center;font-size:15px;color:var(--ink)"><input id="nsK" type="checkbox" checked style="width:22px;min-height:22px"> Kellergeschoss</label></div>
  <label for="nsName">Name des Blatts</label><input id="nsName" placeholder="z. B. Grundriss 1. OG">
@@ -213,6 +213,9 @@ const MT='<path d="M50,192 L128,64 L206,192 Z" fill="none" stroke="#000" stroke-
 const CI=(f='#fff')=>`<circle cx="128" cy="128" r="64" fill="${f}" stroke="#000" stroke-width="5"/>`;
 const rot45=x=>`<g transform="rotate(45,128,128)">${x}</g>`;
 const ln=(x1,y1,x2,y2,w=5)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#000" stroke-width="${w}"/>`;
+const BT='M10,64 l236,0 A118,118 180 0 1 10,64 Z';
+const WV=(x,y)=>`<path d="M${x} ${y} c 5,0 5,-9 12,-9 6,0 6,9 12,9 6,0 6,-9 12,-9 7,0 7,9 12,9" fill="none" stroke="#000" stroke-width="4"/>`;
+const WR=t=>`<clipPath id="c">${UR}/></clipPath>${UR} fill="#fff" stroke="#000" stroke-width="10" clip-path="url(#c)"/>${UR} fill="none" stroke="#000" stroke-width="1"/><path d="M128 142 l18 18 l-18 18 l-18 -18 Z" stroke-width="4" stroke="#000" fill="none"/>${WV(103,134)}${WV(103,122)}`+T(22,90,20,t,K,'start')+'<circle cx="128" cy="48" r="10"/>';
 const SYMDEF=[
  ['Personen',[
   ['p','Person',per('')],
@@ -253,7 +256,14 @@ const SYMDEF=[
  ['Einrichtungen',[
   ['i_br','Bereitstellungsraum',CI(Y)+'<path d="M85,105 L85,151 L171,151 L171,105 Q128,128 85,105 Z" stroke="#000" stroke-width="5" fill="none"/>'],
   ['i_sam','Sammelstelle',CI()+'<circle cx="170" cy="128" r="10" fill="#fff" stroke="#000" stroke-width="3"/><path d="M76,128 l78,0 m-15,-15 l15,15 l-15,15" stroke="#000" stroke-width="3" fill="none"/>'],
-  ['i_bhp','Behandlungsplatz',CI()+'<path d="M128,64 l0,128 M64,128 l128,0" stroke="#000" stroke-width="5"/>']]]
+  ['i_bhp','Behandlungsplatz',CI()+'<path d="M128,64 l0,128 M64,128 l128,0" stroke="#000" stroke-width="5"/>']]],
+ ['Wasserrettung',[
+  ['w_fwboot','Feuerwehrboot',`<clipPath id="c"><path d="${BT}"/></clipPath><path d="${BT}" fill="${R}" stroke="#fff" stroke-width="10" clip-path="url(#c)"/><path d="${BT}" fill="none" stroke="#000" stroke-width="1"/>`],
+  ['w_boot','Boot (Wasserrettung)',`<clipPath id="c"><path d="${BT}"/></clipPath><path d="${BT}" fill="#fff" stroke="#000" stroke-width="10" clip-path="url(#c)"/>`],
+  ['w_bootstr','Bootstrupp',WR('Boot')],['w_tauch','Tauchtrupp',WR('Taucher')],['w_stroem','Strömungsrettungstrupp',WR('Strömungsrettung')],
+  ['m_wr','Wasserrettung',MT+WV(103,126)+WV(103,136)+'<path d="M128 142 l18 18 l-18 18 l-18 -18 Z" stroke-width="3" stroke="#000" fill="none"/>'],
+  ['m_wf','Einsatz von Wasserfahrzeugen',MT+'<path d="M74 170 c 4,0 4,-7 9,-7 5,0 5,7 9,7 5,0 5,-7 9,-7 5,0 5,7 9,7 M74 180 c 4,0 4,-7 9,-7 5,0 5,7 9,7 5,0 5,-7 9,-7 5,0 5,7 9,7 M146 170 c 4,0 4,-7 9,-7 5,0 5,7 9,7 5,0 5,-7 9,-7 5,0 5,7 9,7 M146 180 c 4,0 4,-7 9,-7 5,0 5,7 9,7 5,0 5,-7 9,-7 5,0 5,7 9,7" fill="none" stroke="#000" stroke-width="3"/><path d="M113,165 l30,0 a15,15 180 1,1 -30,0 z" stroke-width="3" stroke="#000" fill="none"/>'],
+  ['g_wasser','Gefahr durch Wasser',`<path d="${GT}" fill="none" stroke="#003399" stroke-width="5"/><path d="M78,84 a10,10 180 1 1 20,0 a10,10 180 1 0 20,0 a10,10 180 1 1 20,0 a10,10 180 1 0 20,0 a10,10 180 1 1 20,0 M78,100 a10,10 180 1 1 20,0 a10,10 180 1 0 20,0 a10,10 180 1 1 20,0 a10,10 180 1 0 20,0 a10,10 180 1 1 20,0" stroke="#003399" stroke-width="5" fill="none"/>`]]]
 ];
 const SYM={};for(const[c,l]of SYMDEF)for(const[k,n,s]of l)SYM[k]={k,n,c,uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv(s))};
 // Eigene Darstellungen (keine taktischen Zeichen): Objekte für Lageplan / TH
@@ -264,12 +274,14 @@ const OBJ={
  krad:['Motorrad','<ellipse rx="46" ry="12" fill="#e3e6e9" stroke="#000" stroke-width="3"/><path d="M28,-26 L28,26" stroke="#000" stroke-width="4"/>'],
  baum:['Baum','<circle r="46" fill="#8cc63f" fill-opacity=".35" stroke="#3d7a1e" stroke-width="3"/><circle r="7" fill="#6b4a2b"/>'],
  hyd:['Wasserentnahme','<circle r="22" fill="#fff" stroke="#0050c8" stroke-width="6"/><circle r="7" fill="#0050c8"/>'],
+ lok:['Lok (Draufsicht)','<path d="M-380,-58 L330,-58 Q380,-50 380,0 Q380,50 330,58 L-380,58 Z" fill="#d9dde1" stroke="#000" stroke-width="3"/><path d="M340,-46 Q366,-38 366,0 Q366,38 340,46" fill="none" stroke="#5a7a99" stroke-width="8"/><rect x="-120" y="-30" width="240" height="60" fill="none" stroke="#000" stroke-width="2"/>'],
+ wagen:['Wagen (Draufsicht)','<rect x="-520" y="-58" width="1040" height="116" rx="10" fill="#e3e6e9" stroke="#000" stroke-width="3"/><path d="M-440,-58 v116 M440,-58 v116" stroke="#000" stroke-width="2"/><path d="M-520,0 h-14 M520,0 h14" stroke="#000" stroke-width="6"/>'],
  nord:['Nordpfeil','<path d="M0,-50 L18,30 L0,18 L-18,30 Z" fill="#111"/><text y="62" text-anchor="middle" font-size="30" font-weight="bold" font-family="Arial">N</text>']};
 const OBJDEF=Object.entries(OBJ).map(([k,[n]])=>[k,n]);
 const PEN={r:'#d00000',b:'#0050c8',k:'#111111',g:'#08803a'};
 const MARK=Object.entries(PEN).map(([k,c])=>`<marker id="m-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`).join('');
 const GRID='<pattern id="g1" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#e4e8eb" stroke-width="1"/></pattern><pattern id="g5" width="200" height="200" patternUnits="userSpaceOnUse"><rect width="200" height="200" fill="url(#g1)"/><path d="M200 0H0V200" fill="none" stroke="#c9d0d6" stroke-width="1.5"/></pattern>';
-const TOOLS=[['sel','Auswahl'],['wall','Wand'],['room','Raum'],['door','Tür'],['win','Fenster'],['stair','Treppe'],['arrow','Pfeil'],['hose','Schlauch'],['barrier','Absperrung'],['zone','Bereich'],['free','Freihand'],['text','Text'],['pal','Zeichen …']];
+const TOOLS=[['sel','Auswahl'],['wall','Wand'],['room','Raum'],['door','Tür'],['win','Fenster'],['stair','Treppe'],['arrow','Pfeil'],['hose','Schlauch'],['rail','Gleis'],['barrier','Absperrung'],['zone','Bereich'],['free','Freihand'],['text','Text'],['pal','Zeichen …']];
 const LBL={door:0,win:0,wall:0,img:0};
 const SCAL=['sym','obj','door','win','stair','text'],ROT=['sym','obj','door','win','stair','text','img'],STRK=['wall','room','line'];
 
@@ -285,6 +297,7 @@ const sp=p=>({x:snapV(p.x),y:snapV(p.y)});
 function toW(cx,cy){const m=map.getScreenCTM();if(!m)return{x:0,y:0};const q=new DOMPoint(cx,cy).matrixTransform(m.inverse());return{x:q.x,y:q.y}}
 const halo=(x,y,t,fs,c='#000',a='middle')=>t?`<text x="${r1(x)}" y="${r1(y)}" font-size="${fs}" font-family="Arial,Helvetica,sans-serif" font-weight="bold" text-anchor="${a}" fill="${c}" stroke="#fff" stroke-width="${fs/5}" paint-order="stroke" stroke-linejoin="round">${esc(t)}</text>`:'';
 const pd=p=>p.map((q,i)=>(i?'L':'M')+r1(q[0])+','+r1(q[1])).join('');
+const railOff=(p,dd)=>p.map((q,i)=>{const a=p[Math.max(0,i-1)],b=p[Math.min(p.length-1,i+1)],nx=a[1]-b[1],ny=b[0]-a[0],l=Math.hypot(nx,ny)||1;return[q[0]+nx/l*dd,q[1]+ny/l*dd]});
 const pds=p=>{if(p.length<3)return pd(p);let d='M'+r1(p[0][0])+','+r1(p[0][1]);for(let i=1;i<p.length-1;i++)d+='Q'+r1(p[i][0])+','+r1(p[i][1])+' '+r1((p[i][0]+p[i+1][0])/2)+','+r1((p[i][1]+p[i+1][1])/2);const l=p[p.length-1];return d+'L'+r1(l[0])+','+r1(l[1])};
 function rItem(it,i){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0}) scale(${it.s||1})`;
  switch(it.t){
@@ -293,10 +306,14 @@ function rItem(it,i){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rotat
  case 'door':s=`<g transform="${tf} scale(1,${it.f||1})"><line x1="2" y1="0" x2="38" y2="0" stroke="#fff" stroke-width="14"/><path d="M0,0 L0,-40 M0,-40 A40,40 0 0,1 40,0" fill="#fff" fill-opacity=".01" stroke="#1b1f23" stroke-width="2.5"/></g>`;break;
  case 'win':s=`<g transform="${tf}"><rect x="0" y="-6" width="60" height="12" fill="#fff" stroke="#1b1f23" stroke-width="2"/><line x1="0" y1="0" x2="60" y2="0" stroke="#1b1f23" stroke-width="2"/></g>`;break;
  case 'stair':s=`<g transform="${tf}"><rect x="0" y="0" width="80" height="160" fill="#fff" stroke="#1b1f23" stroke-width="3"/>${[1,2,3,4,5,6,7,8,9].map(k=>`<line x1="0" y1="${k*16}" x2="80" y2="${k*16}" stroke="#1b1f23" stroke-width="1.5"/>`).join('')}<path d="M40,150 L40,18" stroke="#111" stroke-width="3" marker-end="url(#m-k)"/></g>`;break;
- case 'line':{const d=(['free','hose','arrow'].includes(it.k)?pds:pd)(it.pts),c=PEN[it.c]||PEN.r,m=it.pts[Math.floor(it.pts.length/2)];
+ case 'line':{const d=(['free','hose','arrow'].includes(it.k)?pds:pd)(it.pts),c=PEN[it.c]||PEN.r,m=it.pts.length===2?[(it.pts[0][0]+it.pts[1][0])/2,(it.pts[0][1]+it.pts[1][1])/2]:it.pts[Math.floor(it.pts.length/2)];
   s=`<path d="${d}" fill="none" stroke="rgba(0,0,0,0)" stroke-width="26" stroke-linecap="round"/>`;
   if(it.k==='hose')s+=`<path d="${d}" fill="none" stroke="#0050c8" stroke-width="${it.w||5}" stroke-linecap="round" stroke-linejoin="round"/>`;
   else if(it.k==='barrier')s+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="${it.w||8}"/><path d="${d}" fill="none" stroke="#e00000" stroke-width="${it.w||8}" stroke-dasharray="16 12"/>`;
+  else if(it.k==='rail'){const a=(it.pts.length>2?pds:pd)(railOff(it.pts,28)),b=(it.pts.length>2?pds:pd)(railOff(it.pts,-28));s=`<path d="${d}" fill="none" stroke="rgba(0,0,0,0)" stroke-width="90"/><path d="${d}" fill="none" stroke="#a08f7a" stroke-width="96" stroke-dasharray="10 16"/><path d="${a}" fill="none" stroke="#333" stroke-width="6"/><path d="${b}" fill="none" stroke="#333" stroke-width="6"/>`}
+  else if(it.k==='water')s=`<path d="${d}Z" fill="#cfe6f7" stroke="#7fb3d9" stroke-width="2"/>`;
+  else if(it.k==='bank')s+=`<path d="${d}" fill="none" stroke="#4a6b3a" stroke-width="${it.w||6}" stroke-linecap="round"/>`;
+  else if(it.k==='fair')s+=`<path d="${d}" fill="none" stroke="#0050c8" stroke-width="${it.w||2}" stroke-dasharray="24 16"/>`;
   else if(it.k==='edge')s+=`<path d="${d}" fill="none" stroke="#555" stroke-width="${it.w||4}"/>`;
   else if(it.k==='center')s+=`<path d="${d}" fill="none" stroke="#888" stroke-width="${it.w||3}" stroke-dasharray="30 20"/>`;
   else if(it.k==='ground')s+=`<path d="${d}" fill="none" stroke="#6b5640" stroke-width="${it.w||5}"/>`;
@@ -322,7 +339,7 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
  if(it.t==='line'&&it.pts.length===2)o+=H(...it.pts[0],'l0')+H(...it.pts[1],'l1');
  $('ov').innerHTML=o}
 function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
- const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände'}[it.k],zone:'Bereich',text:'Text',img:'Hintergrund'}[it.t];
+ const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne'}[it.k],zone:'Bereich',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
  +(it.t==='sym'&&SYM[it.k].c==='Personen'?`<span class="grp"><span class="szl">Anzahl</span><button class="sm" data-a="n-" aria-label="Anzahl verringern">−</button><input id="pN" type="number" min="0" max="999" inputmode="numeric" pattern="[0-9]*" value="${it.n||''}" placeholder="–" aria-label="Anzahl"><button class="sm" data-a="n+" aria-label="Anzahl erhöhen">+</button></span><span class="grp"><span class="szl">Status</span><button class="sm${!it.m?' on':''}" data-a="m0">–</button><button class="sm${it.m==='?'?' on':''}" data-a="m?">? vermutet</button><button class="sm${it.m==='!'?' on':''}" data-a="m!">! bestätigt</button></span>`:'')
  +(SCAL.includes(it.t)?`<span class="szl">Größe</span><button class="sm" data-a="s-" aria-label="Kleiner">−</button><input id="pS" type="range" min="20" max="600" step="5" value="${Math.round((it.s||1)*100)}" aria-label="Größe"><span id="pSv" class="szl num">${Math.round((it.s||1)*100)} %</span><button class="sm" data-a="s+" aria-label="Größer">+</button>`:'')
@@ -342,7 +359,7 @@ function doUndo(){const u=undo.pop();if(!u)return toast('Nichts rückgängig zu 
 function setTool(t){if(t==='pal'){openPal();return}tool=t;if(t!=='place')placing=null;sel=-1;render()}
 function renderTools(){$('tools').innerHTML=TOOLS.map(([k,n])=>`<button class="sm${tool===k||(k==='pal'&&tool==='place')?' on':''}" data-t="${k}">${n}</button>`).join('');
  $('quickSym').innerHTML=recent.map(k=>`<button class="sm ico${tool==='place'&&placing===k?' on':''}" data-q="${k}" title="${esc(SYM[k]?.n||OBJ[k]?.[0])}"><img alt="${esc(SYM[k]?.n||OBJ[k]?.[0])}" src="${thumb(k)}"></button>`).join('')+'<span class="sep"></span>'+Object.keys(PEN).map(k=>`<button class="sm dot${pen===k?' on':''}" data-pen="${k}" style="background:${PEN[k]}" aria-label="Stiftfarbe"></button>`).join('')}
-const thumb=k=>SYM[k]?SYM[k].uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${k==='lkw'||k==='bus'?'-250 -125 500 250':'-100 -70 200 140'}">${OBJ[k][1]}</svg>`);
+const thumb=k=>SYM[k]?SYM[k].uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${k==='lok'||k==='wagen'?'-560 -280 1120 560':k==='lkw'||k==='bus'?'-250 -125 500 250':'-100 -70 200 140'}">${OBJ[k][1]}</svg>`);
 $('tools').onclick=e=>{const b=e.target.closest('[data-t]');if(b)setTool(b.dataset.t)};
 $('quickSym').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.q)usePlace(b.dataset.q);if(b.dataset.pen){pen=b.dataset.pen;renderTools()}};
 function usePlace(k){tool='place';placing=k;sel=-1;recent=[k,...recent.filter(x=>x!==k)].slice(0,10);try{localStorage.setItem(KEY+'.recent',JSON.stringify(recent))}catch(e){}render()}
@@ -377,7 +394,7 @@ map.onpointerdown=e=>{if(!need())return;
  switch(tool){case 'wall':n={t:'wall',x1:q.x,y1:q.y,x2:q.x,y2:q.y,w:10};break;
   case 'room':n={t:'room',x:q.x,y:q.y,w:0,h:0,l:'',sw:6};break;
   case 'zone':n={t:'zone',x:r1(p.x),y:r1(p.y),r:0,l:'Gefahrenbereich'};break;
-  case 'arrow':case 'hose':case 'barrier':case 'free':n={t:'line',k:tool,pts:[[r1(p.x),r1(p.y)]],c:pen,l:''};break;
+  case 'arrow':case 'hose':case 'barrier':case 'rail':case 'free':n={t:'line',k:tool,pts:[[r1(p.x),r1(p.y)]],c:pen,l:''};break;
   case 'door':n={t:'door',x:q.x,y:q.y,r:0,s:1,f:1};break;case 'win':n={t:'win',x:q.x,y:q.y,r:0,s:1};break;
   case 'stair':n={t:'stair',x:q.x,y:q.y,r:0,s:1};break;case 'text':n={t:'text',x:r1(p.x),y:r1(p.y),r:0,s:1,l:'Text',c:pen};break;
   case 'place':n=SYM[placing]?{t:'sym',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:''}:{t:'obj',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:placing==='hyd'?'UH':''};break}
@@ -468,6 +485,13 @@ const TPL={
   if(dach==='sattel'){it.push(W_(x0-30,top+20,(x0+x1)/2,top-220,10),W_((x0+x1)/2,top-220,x1+30,top+20,10),TX(x1+30,top-60,'DG'))}else{it.push(W_(x0,top,x0,top-30,10),W_(x1,top,x1,top-30,10))}
   return it},
  strasse:()=>[LN('edge',[[0,360],[1600,360]]),LN('edge',[[0,640],[1600,640]]),LN('center',[[0,500],[1600,500]]),TX(30,330,'Straße / km',.9),{t:'obj',k:'nord',x:1500,y:120,s:1,r:0,l:''}],
+ bahn:()=>[LN('rail',[[0,420],[2600,420]]),LN('rail',[[0,580],[2600,580]]),TX(30,350,'Gleis 1',.9),TX(30,680,'Gleis 2',.9),
+  {t:'obj',k:'lok',x:480,y:420,s:1,r:0,l:''},{t:'obj',k:'wagen',x:1400,y:420,s:1,r:0,l:''},
+  {t:'sym',k:'g_el',x:1300,y:220,s:1.2,r:0,l:'Oberleitung 15 kV'},TX(30,140,'Strecke ____  /  km ____',.9),{t:'obj',k:'nord',x:2450,y:150,s:1,r:0,l:''}],
+ rhein:()=>[{t:'line',k:'water',pts:[[0,300],[2400,300],[2400,900],[0,900]],c:'b',l:'',lock:1},LN('bank',[[0,300],[2400,300]]),LN('bank',[[0,900],[2400,900]]),
+  ...[400,900,1400,1900].map(x=>LN('bank',[[x,900],[x-70,780]])),{t:'line',k:'fair',pts:[[0,560],[2400,560]],c:'b',l:'Fahrrinne'},
+  {t:'line',k:'arrow',pts:[[150,420],[650,420]],c:'b',l:'Fließrichtung'},{t:'line',k:'arrow',pts:[[1450,700],[1950,700]],c:'b',l:'Fließrichtung'},
+  TX(30,270,'linkes Ufer',.9),TX(30,960,'rechtes Ufer',.9),TX(1650,250,'Rhein-km ____',.9),{t:'obj',k:'nord',x:2300,y:150,s:1,r:0,l:''}],
  kreuzung:()=>[LN('edge',[[0,360],[660,360]]),LN('edge',[[940,360],[1600,360]]),LN('edge',[[0,640],[660,640]]),LN('edge',[[940,640],[1600,640]]),LN('edge',[[660,0],[660,360]]),LN('edge',[[940,0],[940,360]]),LN('edge',[[660,640],[660,1000]]),LN('edge',[[940,640],[940,1000]]),
   LN('center',[[0,500],[660,500]]),LN('center',[[940,500],[1600,500]]),LN('center',[[800,0],[800,360]]),LN('center',[[800,640],[800,1000]]),{t:'obj',k:'nord',x:1500,y:120,s:1,r:0,l:''}]};
 // Export
