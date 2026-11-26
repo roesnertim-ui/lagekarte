@@ -109,6 +109,7 @@ html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 #toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;display:grid;gap:6px;pointer-events:none}
 #toast div{background:#16191c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 #print .sheet:first-child{break-before:auto}
+#helpBtn{min-width:44px;font-size:18px}#dHelp,#dImp{width:min(760px,96vw)}.help details{border-bottom:1px solid var(--line);padding:6px 0}.help summary{font-weight:700;cursor:pointer;min-height:36px;display:flex;align-items:center}.help ul{margin:4px 0 6px;padding-left:20px}.help li{margin:3px 0}
 .phgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin:10px 0}.phc{display:grid;gap:4px}.phimg{padding:0;overflow:hidden;height:130px;background:#000}.phimg img{width:100%;height:100%;object-fit:cover;display:block}.phc input{min-height:36px}
 #dPhoto{width:min(860px,96vw)}#dScan{width:min(640px,96vw)}
 #print .phprint{display:grid;grid-template-columns:1fr 1fr;gap:8pt}#print figure{margin:0;break-inside:avoid}#print figure img{width:100%;max-height:85mm;object-fit:contain;border:1px solid #888}#print figcaption{font-size:8.5pt}
@@ -147,6 +148,7 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
  <input id="docName" aria-label="Name der Lage" placeholder="Name der Lage">
  <button class="sm" id="docMenu">Lagen …</button>
  <button class="sm" id="docPrint">Drucken / PDF</button>
+ <button class="sm" id="helpBtn" aria-label="Hilfe" title="Hilfe">?</button>
 </header>
 <main class="lk">
 <section id="s-map" class="on">
@@ -204,6 +206,46 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
  <p class="hint">Gerade, formatfüllend und ohne Spiegelung fotografieren. Die Auswertung läuft nur auf diesem Gerät, die Fotos werden nicht gespeichert. Nur mit Einverständnis der Person verwenden.</p>
  <div class="row" style="margin-top:8px"><button class="pri" id="scanOk" disabled>Übernehmen</button><button class="ghost fix" onclick="this.closest('dialog').close()">Abbrechen</button></div></dialog>
 <input id="scanFile" type="file" accept="image/*" capture="environment" hidden>
+<dialog id="dHelp"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Hilfe</h2><a class="btn" href="kurzanleitung.pdf" target="_blank" rel="noopener" style="display:flex;align-items:center;text-decoration:none;color:var(--ink)">Kurzanleitung (PDF)</a><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
+<div class="help">
+<details open><summary>Grundbedienung Karte</summary><ul>
+<li><b>Auswahl</b> aktiv: Element antippen = markieren, ziehen = verschieben. Leere Fläche ziehen = Karte verschieben, zwei Finger = zoomen.</li>
+<li><b>Roter Punkt</b> am markierten Element = skalieren, blaue Punkte = Größe bzw. Endpunkte ändern.</li>
+<li>Rechts am Kartenrand: <b>+ / −</b> zoomen, <b>⤢</b> alles einpassen, <b>#</b> Raster ein/aus (Fangen), <b>↶</b> rückgängig.</li>
+<li>Unten erscheint zum markierten Element das <b>Eigenschaftsfeld</b>: Beschriftung, Größe, Drehen, Duplizieren, Fixieren, Löschen, Fotos.</li>
+<li>Nach dem Setzen eines Zeichens oder Bereichs ist automatisch wieder <b>Auswahl</b> aktiv.</li></ul></details>
+<details><summary>Werkzeuge</summary><ul>
+<li><b>Gebäude:</b> Wand und Raum aufziehen. Tür und Fenster rasten in die nächste Wand ein, „Aufschlag wechseln“ und „90°“ stellen die Richtung ein.</li>
+<li><b>Linien:</b> Pfeil, Schlauch (Beschriftung z. B. „B“ oder „2 C“), Absperrung, Freihand. <b>Zeigelinie</b> von einer Person oder UN-Tafel auf Fahrzeug, Raum oder Bereich ziehen = Zuordnung.</li>
+<li><b>Verkehrswege:</b> Straße und Gleis frei ziehen. Der Verlauf wird geglättet, Einmündungen gehen ineinander über.</li>
+<li><b>Bereich:</b> Kreis aufziehen, danach Art (Gefahren-, Absperr-, Arbeitsbereich) und Form (Kreis/Rechteck) wählen. Bereiche liegen immer im Hintergrund.</li>
+<li><b>Farbe</b> gilt für Pfeil, Freihand und Text.</li></ul></details>
+<details><summary>Zeichen und Personen</summary><ul>
+<li><b>Alle Zeichen</b> öffnet die Auswahl mit Suche. Zuletzt verwendete Zeichen liegen in der Leiste.</li>
+<li>Personenzeichen: <b>Zustand</b> umstellen (z. B. verletzt → gerettet, mit Uhrzeit im Verlauf), <b>eingeklemmt</b>, <b>Anzahl</b>, Status <b>?</b> vermutet / <b>!</b> bestätigt, <b>1 abspalten</b>, <b>Ort / Fahrzeug</b>.</li>
+<li>Personen in beschrifteten Räumen oder Geschossen werden automatisch zugeordnet.</li>
+<li>Fahrzeuge und Schiffe erhalten automatisch eine Kennung (Fzg A, Schiff A …).</li>
+<li><b>UN-Tafel:</b> Nummer zur Kennzeichnung der Gefahr, UN-Nummer und Stoff eintragen, per Auswahl oder Zeigelinie einem Fahrzeug zuordnen.</li></ul></details>
+<details><summary>Blätter und Vorlagen</summary><ul>
+<li><b>+ Blatt</b>: Lageplan, Grundriss, Gebäudeschnitt, Gebäude (Schnitt + Grundrisse je Geschoss), Straße/Kreuzung, Bahnstrecke, Fluss/Rhein, Wasserrettung Rhein.</li>
+<li><b>Wasserrettung Rhein:</b> Ereignis-km, Zeit seit Ereignis und Fließgeschwindigkeit eingeben, die Sektoren werden nach AEP berechnet. Aktuelle Pegelwerte kommen von PEGELONLINE. Die Wassertemperatur stammt vom Pegel Köln und ist nur ein Anhaltswert, die Fließgeschwindigkeit wird nicht gemessen.</li>
+<li><b>Blatt …</b>: umbenennen, Foto/Plan als Hintergrund, Pegelwerte aktualisieren, als Bild speichern, löschen.</li></ul></details>
+<details><summary>Reiter Personen</summary><ul>
+<li>Alle Personen der Lage mit Name, Geburtsdatum, Anschrift, Telefon, Sichtung, Transport und Bemerkung. Personen ohne Zeichen lassen sich zusätzlich anlegen.</li>
+<li><b>Ausweis scannen:</b> erst die Vorderseite (Name, Geburtsdatum), dann die Rückseite (Anschrift). Die maschinenlesbare Zone prüft das Geburtsdatum. Die Auswertung läuft nur auf dem Gerät, Fotos werden nicht gespeichert. Nur mit Einverständnis der Person verwenden.</li></ul></details>
+<details><summary>Drucken, Sichern, Offline</summary><ul>
+<li><b>Drucken / PDF</b>: alle Blätter, Fotos, Gefahrgut- und Zuordnungstabellen sowie die Personenliste. Die Personenliste lässt sich auch einzeln drucken.</li>
+<li>Alle Daten liegen <b>nur auf diesem Gerät</b>. Über <b>Lagen … → Sicherung exportieren</b> sichern. Nach Einsatzende Lage löschen.</li>
+<li>Installation: in Safari <b>Teilen → Zum Home-Bildschirm</b>. Nach dem ersten Start mit Internet läuft die App offline.</li>
+<li>Update: App mit Internet öffnen, schließen und neu öffnen.</li></ul></details>
+<details><summary>Hinweise</summary><ul>
+<li>Taktische Zeichen nach dem freien Zeichensatz „Taktische-Zeichen“ von Jonas Köritz (CC BY 4.0), angelehnt an die DV 102. Kein amtlicher Zeichensatz. Fahrzeuge, Schiffe, Ablagen, Grundriss- und Schnittelemente sind eigene Darstellungen.</li>
+<li>Skizzen sind nicht maßstäblich. Das Raster dient der Orientierung (fein 1 m, grob 5 m).</li>
+<li>Texterkennung: tesseract.js (Apache-2.0). Pegeldaten: PEGELONLINE, Wasserstraßen- und Schifffahrtsverwaltung des Bundes.</li></ul></details>
+</div>
+<p class="hint" id="impLinkWrap" hidden><a href="#" id="impLink">Impressum</a></p></dialog>
+<dialog id="dImp"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Impressum</h2><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div><div id="impBody"></div></dialog>
+
 <div id="toast" aria-live="polite"></div>
 <script>
 {
@@ -774,6 +816,9 @@ function persPrintHtml(o){const R=persRows();if(!R.length)return'';
  <table style="font-size:8.5pt"><tr><th>Nr.</th><th>Art / Status</th><th>Ort / Fahrzeug</th><th>Nachname</th><th>Vorname</th><th>Geb.</th><th>Anschrift</th><th>Telefon</th><th>Sichtung</th><th>Transport / Verbleib</th><th>Bemerkung</th></tr>
  ${R.map((r,i)=>`<tr><td>${i+1}</td>${td(r.art+(r.st?' '+r.st:'')+(r.lbl?' – '+r.lbl:'')+(r.hist?' | Verlauf: '+r.hist:''))}${td(r.ort)}${td(r.rec.nach)}${td(r.rec.vor)}${td(r.rec.geb)}${td(adrOf(r.rec))}${td(r.rec.tel)}${td((SKS.find(s=>s[0]===(r.rec.sk||''))||['',''])[1].replace('–',''))}${td(r.rec.trans)}${td(r.rec.bem)}</tr>`).join('')}</table></div>`}
 $('persPrint').onclick=()=>{const o=op();const h=persPrintHtml(o);if(!h)return toast('Keine Personen erfasst');$('print').innerHTML=h;setTimeout(()=>window.print(),50)};
+const IMPRESSUM={name:'',adr:'',mail:''};
+function impRender(){const I=IMPRESSUM,ok=I.name&&I.adr;$('impLinkWrap').hidden=!ok;if(!ok)return;$('impBody').innerHTML=`<p><b>Angaben gemäß § 5 DDG</b></p><p>${esc(I.name)}<br>${esc(I.adr).replace(/\n/g,'<br>')}</p>${I.mail?`<p>E-Mail: ${esc(I.mail)}</p>`:''}<p class="hint">Privates, nicht kommerzielles Werkzeug ohne Gewähr. Kein amtliches Produkt.</p>`}
+impRender();$('helpBtn').onclick=()=>$('dHelp').showModal();$('impLink').onclick=e=>{e.preventDefault();$('dImp').showModal()};
 function showTab(t){$('s-map').classList.toggle('on',t==='map');$('s-pers').classList.toggle('on',t==='pers');$('tabMap').classList.toggle('on',t==='map');$('tabPers').classList.toggle('on',t==='pers');
  if(t==='pers')renderPers();else{render()}}
 $('tabMap').onclick=()=>showTab('map');$('tabPers').onclick=()=>showTab('pers');

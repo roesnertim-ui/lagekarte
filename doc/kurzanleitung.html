@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><title>Lagekarte – Kurzanleitung</title>
+<style>
+@page{size:A4 portrait;margin:14mm 14mm 16mm}
+body{font:9.6pt/1.4 Arial,Helvetica,sans-serif;color:#111;margin:0}
+h1{font-size:19pt;margin:0 0 1mm}h2{font-size:11.5pt;margin:4mm 0 1.5mm;padding-bottom:1mm;border-bottom:1.5pt solid #c8102e;break-after:avoid}
+.sub{color:#555;margin:0 0 3mm}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 7mm}
+table{width:100%;border-collapse:collapse;margin:1mm 0 2mm;font-size:9.2pt}th,td{border-bottom:.6pt solid #bbb;padding:1.3mm 1.5mm;text-align:left;vertical-align:top}th{background:#f1f1f1;font-weight:bold}
+td:first-child{white-space:nowrap;font-weight:bold;width:27%}
+ul,ol{margin:1mm 0 2mm;padding-left:5mm}li{margin:.6mm 0}
+img{width:100%;border:.6pt solid #999;border-radius:1.5mm;margin:1.5mm 0}
+.cap{font-size:8.4pt;color:#555;margin:-.5mm 0 2mm}
+.box{border:1pt solid #c8102e;border-radius:1.5mm;padding:2mm 3mm;margin:2mm 0;background:#fff6f6;break-inside:avoid}
+.pb{break-before:page}
+.foot{margin-top:5mm;font-size:8pt;color:#555;border-top:.6pt solid #bbb;padding-top:1.5mm}
+</style></head><body>
+<h1>Lagekarte – Kurzanleitung</h1>
+<p class="sub">Skizzen- und Dokumentationswerkzeug für Einsatzlagen · iPad / Tablet / PC · Stand 26.11.2026</p>
+
+<div class="box"><b>Aufruf:</b> https://roesnertim-ui.github.io/lagekarte/ &nbsp;·&nbsp; <b>Installation iPad:</b> in Safari öffnen → Teilen → „Zum Home-Bildschirm“. Nach dem ersten Start mit Internet läuft die App offline. <b>Update:</b> App mit Internet öffnen, schließen, neu öffnen.</div>
+
+<img src="shot_karte.png" alt="Bildschirm Karte" style="width:78%;display:block;margin:1.5mm auto">
+<p class="cap">Oben Kopfzeile, darunter Blatt-Auswahl und gruppierte Werkzeugleiste, darunter die Karte. Unten das Eigenschaftsfeld des markierten Elements (hier: 2 Verletzte, eingeklemmt, Fzg A zugeordnet).</p>
+
+<div class="cols"><div>
+<h2>1 Aufbau</h2>
+<table>
+<tr><td>Karte / Personen</td><td>Umschalten zwischen Lagekarte und Personenübersicht</td></tr>
+<tr><td>Name der Lage</td><td>frei änderbar, z. B. „B3 Wohnungsbrand Hauptstraße“</td></tr>
+<tr><td>Lagen …</td><td>Lagen öffnen, neu anlegen, löschen, sichern, einlesen</td></tr>
+<tr><td>Drucken / PDF</td><td>alle Blätter mit Tabellen, Fotos und Personenliste</td></tr>
+<tr><td>?</td><td>Hilfe in der App, Link zu dieser Anleitung</td></tr>
+<tr><td>+ Blatt / Blatt …</td><td>weiteres Blatt aus Vorlage, Blatt umbenennen, Hintergrund, Bild speichern, löschen</td></tr>
+</table>
+
+</div><div>
+<h2>2 Werkzeuge</h2>
+<table>
+<tr><td>Gebäude</td><td>Wand, Raum aufziehen. Tür, Fenster rasten in Wände ein. Treppe</td></tr>
+<tr><td>Linien</td><td>Pfeil, Zeigelinie (Zuordnung), Schlauch, Absperrung, Freihand</td></tr>
+<tr><td>Verkehrswege</td><td>Straße und Gleis frei ziehen, Verlauf wird geglättet</td></tr>
+<tr><td>Bereich</td><td>Kreis aufziehen, dann Art: Gefahren-, Absperr-, Arbeitsbereich; Form: Kreis/Rechteck. Liegt immer im Hintergrund</td></tr>
+<tr><td>Text</td><td>Freitext, Farbe über „Farbe“</td></tr>
+<tr><td>Zeichen</td><td>„Alle Zeichen“ mit Suche, zuletzt verwendete direkt in der Leiste</td></tr>
+</table>
+
+</div></div>
+<div class="cols"><div>
+<h2>3 Bedienung der Karte</h2>
+<ul>
+<li><b>Auswahl</b>: Element antippen = markieren, ziehen = verschieben</li>
+<li>Leere Fläche ziehen = Karte verschieben, zwei Finger = zoomen</li>
+<li><b>Roter Punkt</b> = skalieren, <b>blaue Punkte</b> = Größe / Endpunkte</li>
+<li>Rand rechts: <b>+ −</b> Zoom, <b>⤢</b> einpassen, <b>#</b> Raster, <b>↶</b> rückgängig</li>
+<li>Nach dem Setzen eines Zeichens oder Bereichs ist wieder <b>Auswahl</b> aktiv</li>
+<li>Mit dem Apple Pencil zeichnen, der Handballen wird ignoriert</li>
+</ul>
+</div><div>
+<h2>4 Zeichengruppen</h2>
+<p>Personen · Führung · Gefahren/Brand · Schäden · Maßnahmen · Fahrzeuge · Einheiten · Einrichtungen · Wasserrettung · Gefahrgut (UN-Tafel) · Schiffe · Ablagen TH (Rettungsdienst, Geräte, Schrott) · Objekte (Pkw, Lkw, Bus, Lok, Wagen, Baum …) · Nordpfeil (Orientierung)</p>
+</div></div>
+
+<h2>5 Personen auf der Karte</h2>
+<div class="cols"><div>
+<table>
+<tr><td>Zustand</td><td>Person, vermisst, verschüttet, verletzt, tot, gerettet, zu transportieren, transportiert. Jede Umstellung wird mit Uhrzeit protokolliert</td></tr>
+<tr><td>eingeklemmt</td><td>Zusatz, wird bei „gerettet“ aufgehoben</td></tr>
+<tr><td>Anzahl / Status</td><td>Zahl unten links, „?“ vermutet, „!“ bestätigt</td></tr>
+<tr><td>1 abspalten</td><td>eine Person mit ihren Daten als eigenes Zeichen herauslösen</td></tr>
+<tr><td>Ort / Fahrzeug</td><td>Zuordnung zu Fahrzeug, Schiff, Raum, Geschoss, Bereich oder Freitext</td></tr>
+</table>
+</div><div>
+<ul>
+<li><b>Automatisch:</b> Person in beschriftetem Raum oder Geschoss wird diesem zugeordnet</li>
+<li><b>Zeigelinie:</b> von Person auf Fahrzeug, Raum oder Bereich ziehen</li>
+<li>Fahrzeuge und Schiffe erhalten Kennungen: Fzg A, Fzg B, Schiff A …</li>
+<li><b>UN-Tafel:</b> Nr. zur Kennzeichnung der Gefahr + UN-Nummer + Stoff, einem Fahrzeug, Waggon oder Schiff zuordnen</li>
+<li><b>Fotos</b> an Fahrzeugen, Räumen, Bereichen und Zeichen</li>
+</ul>
+</div></div>
+
+<h2>6 Reiter Personen</h2>
+<div class="cols"><div>
+<img src="shot_personen.png" alt="Bildschirm Personen">
+<p class="cap">Je Person eine Karte. Bei Anzahl &gt; 1 erscheint jede Person einzeln.</p>
+</div><div>
+<ul>
+<li>Nachname, Vorname, Geburtsdatum, Straße, PLZ, Wohnort, Telefon, Sichtung, Transport / Verbleib, Bemerkung</li>
+<li><b>Ausweis scannen:</b> 1. Vorderseite (Name, Geburtsdatum), 2. Rückseite (Anschrift). Die maschinenlesbare Zone prüft das Geburtsdatum. Werte vor dem Übernehmen kontrollieren</li>
+<li>„+ Person ohne Zeichen“ für Betroffene, Zeugen, Unverletzte</li>
+<li>„Auf Karte“ springt zum Zeichen</li>
+<li>„Personenliste drucken“ druckt nur die Liste</li>
+</ul>
+<div class="box"><b>Datenschutz:</b> Alle Daten liegen nur auf dem Gerät. Ausweis-Fotos werden nicht gespeichert. Ausweis nur mit Einverständnis der Person scannen. Nach Einsatzende und Übergabe der Daten die Lage löschen.</div>
+</div></div>
+
+<h2>7 Vorlagen (+ Blatt)</h2>
+<table>
+<tr><td>Lageplan</td><td>leeres Blatt</td></tr>
+<tr><td>Grundriss / Schnitt</td><td>Außenwände mit Treppenraum bzw. Geschosse, Keller, Dach; Personen werden Geschossen zugeordnet</td></tr>
+<tr><td>Gebäude</td><td>Schnitt und je Geschoss ein Grundriss nebeneinander</td></tr>
+<tr><td>Straße / Kreuzung</td><td>für TH und VU</td></tr>
+<tr><td>Bahnstrecke</td><td>2 Gleise, Lok, Wagen, Oberleitung</td></tr>
+<tr><td>Fluss / Rhein</td><td>Ufer, Buhnen, Fahrrinne, Fließrichtung</td></tr>
+<tr><td>Wasserrettung Rhein</td><td>Ereignis-km, Zeit seit Ereignis, Fließgeschwindigkeit (Standard 3,0 m/s, 10 min). Abdrift-, Such- und Beobachtungssektor nach AEP mit Landmarken, Sektorenansage zum Kopieren, aktuelle Pegelwerte (PEGELONLINE). Wassertemperatur Pegel Köln = Anhaltswert; Fließgeschwindigkeit wird nicht gemessen</td></tr>
+</table>
+
+<h2>8 Drucken und Sichern</h2>
+<ul>
+<li><b>Drucken / PDF:</b> Blätter (A4 hoch), Gefahrgut- und Zuordnungstabellen, Fotoseiten, Personenliste</li>
+<li><b>Blatt … → Als Bild speichern:</b> PNG eines Blatts, z. B. für Messenger oder Lagemeldung</li>
+<li><b>Lagen … → Sicherung exportieren / importieren:</b> Datei mit allen Lagen inkl. Fotos</li>
+</ul>
+
+<div class="foot">Taktische Zeichen nach dem freien Zeichensatz „Taktische-Zeichen“ von Jonas Köritz (CC BY 4.0), angelehnt an die DV 102 – kein amtlicher Zeichensatz. Fahrzeuge, Schiffe, Ablagen, Grundriss- und Schnittelemente sind eigene Darstellungen. Skizzen sind nicht maßstäblich. Texterkennung: tesseract.js (Apache-2.0). Pegeldaten: PEGELONLINE (WSV).</div>
+</body></html>
