@@ -73,6 +73,12 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .tools button.on,.props button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .tools .ico{padding:2px 4px;width:52px}.tools .ico img{width:44px;height:36px;object-fit:contain;display:block;background:#fff;border-radius:4px}
 .tools .sep{flex:0 0 10px}
+.tg{display:flex;flex-direction:column;gap:2px;padding:3px 6px 4px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.tg>div{display:flex;gap:3px;flex-wrap:wrap;align-items:center}.tgl{font-size:11px;color:var(--mute);line-height:1;padding-left:2px;white-space:nowrap}
+.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:54px;min-height:50px;padding:3px 5px;font:600 11px/1.1 system-ui;border-radius:8px}
+.tb svg{width:22px;height:22px}.tb span{white-space:nowrap}
+.tb.ico{min-width:50px;padding:2px}.tb.ico img{width:44px;height:38px;object-fit:contain;background:#fff;border-radius:4px}
+.tools .tb.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}.tb.ico.on{outline:3px solid var(--blue);background:none}
 button.dot{width:36px;min-width:36px;padding:0;border:2px solid var(--line)}button.dot.on{outline:3px solid var(--blue);outline-offset:1px}
 .mapwrap{position:relative}
 #map{display:block;width:100%;height:max(380px,calc(100dvh - 330px));background:#fff;border:1px solid var(--line);border-radius:8px;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -120,12 +126,16 @@ main.lk{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;width:100%
 #s-map.on{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
 .mapcard{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin:0}
 .mbar,.tools,.props{flex:0 0 auto}
-.tools{flex-wrap:wrap;overflow:visible;gap:4px;padding:0 0 5px}
-.tools button{min-height:40px;padding:4px 10px;font-size:14px}
+.tools{flex-wrap:wrap;overflow:visible;gap:6px;padding:0 0 6px;align-items:stretch}#quickSym{display:none}
+.tools button.sm{min-height:40px;padding:4px 10px;font-size:14px}
 .tools .ico{width:48px;padding:2px}.tools .ico img{width:40px;height:32px}
 .mapwrap{flex:1 1 auto;min-height:0}
 #map{height:100%!important;min-height:0}
 .props{min-height:0;padding-top:6px}.props .sm{min-height:38px}
+.mapcard{position:relative}
+#props{position:absolute;left:14px;right:70px;bottom:14px;z-index:3;margin:0;padding:6px 8px;background:var(--panel);background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,.18);max-height:42%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#props:has(>.hint:only-child){background:color-mix(in srgb,var(--panel) 80%,transparent);box-shadow:none;padding:3px 8px;right:auto}
+#props>.hint:only-child{font-size:12px}
 dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
 }
 </style>
@@ -406,7 +416,7 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
  if(SCAL.includes(it.t))o+=`<g data-h="sc"><circle cx="${r1(b.x+b.width+6)}" cy="${r1(b.y+b.height+6)}" r="${r1(hr*.6)}" fill="#d00000" stroke="#fff" stroke-width="${r1(hr/8)}"/><path d="M${r1(b.x+b.width+6-hr*.25)},${r1(b.y+b.height+6-hr*.25)} l${r1(hr*.5)},${r1(hr*.5)}" stroke="#fff" stroke-width="${r1(hr/9)}"/></g>`;
  if(it.t==='line'&&it.pts.length===2)o+=H(...it.pts[0],'l0')+H(...it.pts[1],'l1');
  $('ov').innerHTML=o}
-function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
+function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, ziehen zum Verschieben, roter Punkt = skalieren. Leere Fläche ziehen = Karte verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
  const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',road:'Straße',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',leader:'Zeigelinie',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:ZK[it.zk||'gef']?.[0]||'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
  +(it.t==='obj'&&it.k==='untafel'?(()=>{const vs=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k)),bad=(it.gn&&!/^X?\d{2,3}$/.test(it.gn))||(it.un&&!/^\d{4}$/.test(it.un));return `<span class="grp"><span class="szl">Nr. Gefahr</span><input id="pGn" value="${esc(it.gn||'')}" maxlength="4" autocapitalize="characters" placeholder="33" style="flex:0 0 80px"><span class="szl">UN-Nr.</span><input id="pUn" value="${esc(it.un||'')}" maxlength="4" inputmode="numeric" placeholder="1203" style="flex:0 0 90px"></span><input id="pSt" value="${esc(it.stoff||'')}" placeholder="Stoff (optional)" style="flex:1 1 140px"><span class="grp"><span class="szl">an</span><select id="pUv" style="width:auto;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(x.l||OBJ[x.k][0])}</option>`).join('')}</select></span><span id="pUw" class="szl" style="color:var(--red)"${bad?'':' hidden'}>Format prüfen: Nr. Gefahr 2–3 Ziffern (ggf. mit X), UN-Nr. 4 Ziffern</span>`})():'')
@@ -437,10 +447,24 @@ let svT;function saveSoon(){clearTimeout(svT);svT=setTimeout(save,400)}
 function snap(){const s=sh();if(!s)return;undo.push({id:s.id,j:JSON.stringify(s.items)});if(undo.length>80)undo.shift()}
 function doUndo(){const u=undo.pop();if(!u)return toast('Nichts rückgängig zu machen');const i=sheets().findIndex(x=>x.id===u.id);if(i<0)return;sheets()[i].items=JSON.parse(u.j);shIdx=i;sel=-1;save();renderSheets();render()}
 function setTool(t){if(t==='pal'){openPal();return}tool=t;if(t!=='place')placing=null;sel=-1;render()}
-function renderTools(){$('tools').innerHTML=TOOLS.map(([k,n])=>`<button class="sm${tool===k||(k==='pal'&&tool==='place')?' on':''}" data-t="${k}">${n}</button>`).join('');
- $('quickSym').innerHTML=recent.map(k=>`<button class="sm ico${tool==='place'&&placing===k?' on':''}" data-q="${k}" title="${esc(SYM[k]?.n||OBJ[k]?.[0])}"><img alt="${esc(SYM[k]?.n||OBJ[k]?.[0])}" src="${thumb(k)}"></button>`).join('')+'<span class="sep"></span>'+Object.keys(PEN).map(k=>`<button class="sm dot${pen===k?' on':''}" data-pen="${k}" style="background:${PEN[k]}" aria-label="Stiftfarbe"></button>`).join('')}
+const TIC={sel:'<path d="M6 3l12 9-5.5 1.2L16 19l-2.6 1.2-2.6-5.8L7 18z" fill="currentColor"/>',
+ wall:'<path d="M3 12h18" stroke-width="5"/>',room:'<rect x="4" y="5" width="16" height="14" stroke-width="2.5"/>',
+ door:'<path d="M5 20h14M7 20V6a13 13 0 0 1 12 14" stroke-width="2"/>',win:'<rect x="3" y="9" width="18" height="6" stroke-width="2"/><path d="M3 12h18" stroke-width="1.5"/>',
+ stair:'<path d="M4 20h4v-4h4v-4h4V8h4" stroke-width="2.2"/>',arrow:'<path d="M4 18L18 6M11 6h7v7" stroke-width="2.5"/>',
+ lead:'<path d="M4 6l13 11" stroke-width="2"/><circle cx="18" cy="18" r="2.6" fill="currentColor"/>',hose:'<path d="M3 15c3-6 6 6 9 0s6-6 9 0" stroke-width="3" stroke="#0050c8"/>',
+ barrier:'<path d="M3 12h18" stroke-width="5" stroke="#e00000" stroke-dasharray="4 3"/>',free:'<path d="M3 16c2-8 5-8 7-2s5 6 7-2 3-4 4-2" stroke-width="2.2"/>',
+ road:'<path d="M4 3l3 18M20 3l-3 18" stroke-width="2.2"/><path d="M12 3v18" stroke-width="1.6" stroke-dasharray="3 3"/>',
+ rail:'<path d="M8 3v18M16 3v18M6 6h12M6 10h12M6 14h12M6 18h12" stroke-width="1.8"/>',
+ zone:'<circle cx="12" cy="12" r="8" stroke-width="2.2" stroke-dasharray="4 3"/>',text:'<path d="M5 6h14M12 6v13" stroke-width="2.6"/>',
+ pal:'<path d="M12 3l5 5-5 5-5-5z" stroke-width="2"/><path d="M5 21l4-7 4 7z" stroke-width="2"/><rect x="14" y="15" width="7" height="6" stroke-width="2"/>'};
+const TGR=[['',['sel']],['Gebäude',['wall','room','door','win','stair']],['Linien',['arrow','lead','hose','barrier','free']],['Verkehrswege',['road','rail']],['Flächen / Text',['zone','text']]];
+function renderTools(){const T=Object.fromEntries(TOOLS),bt=k=>`<button class="tb${tool===k||(k==='pal'&&tool==='place'&&!recent.includes(placing))?' on':''}" data-t="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TIC[k]||''}</svg><span>${k==='pal'?'Alle Zeichen':T[k]}</span></button>`;
+ $('tools').innerHTML=TGR.map(([g,ks])=>`<div class="tg">${g?`<span class="tgl">${g}</span>`:'<span class="tgl">&nbsp;</span>'}<div>${ks.map(bt).join('')}</div></div>`).join('')
+ +`<div class="tg"><span class="tgl">Zeichen – zuletzt verwendet</span><div>${bt('pal')}${recent.slice(0,8).map(k=>`<button class="tb ico${tool==='place'&&placing===k?' on':''}" data-q="${k}" title="${esc(SYM[k]?.n||OBJ[k]?.[0])}"><img alt="${esc(SYM[k]?.n||OBJ[k]?.[0])}" src="${thumb(k)}"></button>`).join('')}</div></div>`
+ +`<div class="tg"><span class="tgl">Farbe</span><div>${Object.keys(PEN).map(k=>`<button class="sm dot${pen===k?' on':''}" data-pen="${k}" style="background:${PEN[k]}" aria-label="Stiftfarbe"></button>`).join('')}</div></div>`;
+ $('quickSym').innerHTML=''}
 const thumb=k=>SYM[k]?SYM[k].uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${k==='lok'||k==='wagen'||k==='binnen'||k==='hotel'?'-560 -280 1120 560':k==='untafel'||k.startsWith('abl_')?'-100 -100 200 200':k==='lkw'||k==='bus'?'-250 -125 500 250':'-100 -70 200 140'}">${OBJ[k][1]}</svg>`);
-$('tools').onclick=e=>{const b=e.target.closest('[data-t]');if(b)setTool(b.dataset.t)};
+$('tools').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t)setTool(b.dataset.t);if(b.dataset.q)usePlace(b.dataset.q);if(b.dataset.pen){pen=b.dataset.pen;renderTools()}};
 $('quickSym').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.q)usePlace(b.dataset.q);if(b.dataset.pen){pen=b.dataset.pen;renderTools()}};
 function usePlace(k){tool='place';placing=k;sel=-1;recent=[k,...recent.filter(x=>x!==k)].slice(0,10);try{localStorage.setItem(KEY+'.recent',JSON.stringify(recent))}catch(e){}render()}
 // Palette
@@ -518,6 +542,7 @@ map.onpointerup=map.onpointercancel=e=>{if(e.pointerId===penId)penId=null;if(!pt
   if(bad){items().pop();undo.pop();sel=-1}
   if(!bad)autoAssign(it,items());
   if(!bad&&['wall','room','door','win','stair','line','zone'].includes(it?.t))sel=-1;
+  if(!bad&&tool==='place'&&(it.t==='sym'||it.t==='obj')){tool='sel';placing=null}
   save();act=null;render();if(!bad&&it.t==='text'){setTool('sel');sel=items().length-1;render();$('pL')?.select()}return}
  if(act.type==='move'&&!act.mv)undo.pop();if(act.type==='move'&&act.mv)autoAssign(it,items());if(act.type==='pan')saveVb();
  act=null;save();render()};
