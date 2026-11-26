@@ -158,6 +158,13 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
  <div id="persList"></div>
 </section>
 </main>
+<dialog id="dOsm"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Karte / Gebäude aus OpenStreetMap</h2><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
+ <div class="row" style="margin-top:8px"><input id="osmQ" placeholder="Adresse, z. B. Hauptstraße 1, Braubach" autocomplete="off"><button class="fix" id="osmSearch">Suchen</button><button class="fix" id="osmGeo">Mein Standort</button></div>
+ <p id="osmState" class="hint"></p><div id="osmRes" class="dl" style="margin-top:4px"></div><p id="osmSel" style="font-weight:600"></p>
+ <div class="row"><label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--ink);font-size:15px"><input type="checkbox" id="osmMap" checked style="width:22px;min-height:22px"> Kartenhintergrund</label><label style="display:flex;gap:6px;align-items:center;margin:0;color:var(--ink);font-size:15px"><input type="checkbox" id="osmBld" checked style="width:22px;min-height:22px"> Gebäudeumrisse</label>
+  <div class="fix"><label for="osmR" style="margin:0">Umkreis</label><select id="osmR" style="width:auto"><option value="60">60 m</option><option value="120" selected>120 m</option><option value="200">200 m</option><option value="300">300 m</option></select></div></div>
+ <div class="row" style="margin-top:10px"><button class="pri" id="osmGo" disabled>Einfügen</button></div>
+ <p class="hint">Quelle: OpenStreetMap (© OpenStreetMap-Mitwirkende, ODbL). Benötigt Internet. Karte und Gebäude werden maßstäblich eingefügt (Raster 1 m) und bleiben danach offline erhalten. Die Gebäudedaten sind von Freiwilligen erfasst und können unvollständig oder veraltet sein.</p></dialog>
 <dialog id="dPal"><div class="row" style="align-items:center"><h2 style="margin:0;flex:1 1 auto">Zeichen wählen</h2><button class="sm fix" onclick="this.closest('dialog').close()">Schließen</button></div>
  <input id="palQ" type="search" placeholder="Suchen, z. B. verletzt, HLF, Gas" style="margin:8px 0"><div id="palL"></div></dialog>
 <dialog id="dNew"><form id="dNewF"><h2>Neues Blatt</h2>
@@ -174,7 +181,7 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
  <label for="nsName">Name des Blatts</label><input id="nsName" placeholder="z. B. Grundriss 1. OG">
  <div class="row" style="margin-top:12px"><button class="pri">Anlegen</button><button type="button" class="ghost fix" id="dNewC">Abbrechen</button></div></form></dialog>
 <dialog id="dSheet"><h2>Blatt</h2><label for="shName">Name</label><div class="row"><input id="shName"><button class="fix" data-a="ren">Umbenennen</button></div>
- <div class="dl"><button data-a="bg">Foto / Plan als Hintergrund</button><button data-a="unlock">Fixierungen lösen</button><button data-a="png">Als Bild (PNG) speichern</button><button data-a="live">Pegelwerte aktualisieren</button><button data-a="clr">Blatt leeren</button><button data-a="del" class="del">Blatt löschen</button><button data-a="close" class="ghost">Schließen</button></div>
+ <div class="dl"><button data-a="osm">Karte / Gebäude aus OpenStreetMap</button><button data-a="bg">Foto / Plan / Luftbild als Hintergrund</button><button data-a="unlock">Fixierungen lösen</button><button data-a="png">Als Bild (PNG) speichern</button><button data-a="live">Pegelwerte aktualisieren</button><button data-a="clr">Blatt leeren</button><button data-a="del" class="del">Blatt löschen</button><button data-a="close" class="ghost">Schließen</button></div>
  <p class="hint">Hintergrundbilder werden verkleinert gespeichert, belegen aber spürbar Speicher im Browser.</p><input id="bgFile" type="file" accept="image/*" hidden></dialog>
 <svg id="meas" aria-hidden="true" style="position:absolute;left:-9999px;top:0;width:10px;height:10px;visibility:hidden"></svg>
 <div id="print"></div>
@@ -323,20 +330,20 @@ const PKEYS=[['p','Person'],['p_verm','vermisst'],['p_versch','verschüttet'],['
 const pkName=k=>(PKEYS.find(x=>x[0]===k)||[k,SYM[k]?.n||k])[1];
 const histTxt=it=>(it.hist||[]).map(h=>`${hm(new Date(h.t))} ${pkName(h.from)} → ${pkName(h.to)}`).join(', ');
 function tgName(x){return x.t==='obj'?(x.l||OBJ[x.k][0]):x.l||''}
-function targets(list){return list.filter(x=>(x.t==='obj'&&VEH.includes(x.k))||((x.t==='room'||x.t==='zone')&&x.l))}
-function tgKind(x){return x.t==='obj'?'Fahrzeug':x.ghost||x.floor?'Geschoss':x.t==='zone'?'Bereich':'Raum/Gebäude'}
+function targets(list){return list.filter(x=>(x.t==='obj'&&VEH.includes(x.k))||((x.t==='room'||x.t==='zone'||x.t==='poly')&&x.l&&!x.draft))}
+function tgKind(x){return x.t==='poly'?'Gebäude':x.t==='obj'?'Fahrzeug':x.ghost||x.floor?'Geschoss':x.t==='zone'?'Bereich':'Raum/Gebäude'}
 const ZK={gef:['Gefahrenbereich','#e00000','14 10'],abs:['Absperrbereich','#ff7a00','22 10'],arb:['Arbeitsbereich','#1d8a3a','6 6']};let zkLast='gef',shLast='circle';
-function inside(x,p){return x.t==='room'?p.x>=x.x&&p.x<=x.x+x.w&&p.y>=x.y&&p.y<=x.y+x.h:x.t==='zone'?(x.sh==='rect'?Math.abs(p.x-x.x)<=x.w/2&&Math.abs(p.y-x.y)<=x.h/2:Math.hypot(p.x-x.x,p.y-x.y)<=x.r):false}
-function tgCenter(x){return x.t==='room'?{x:x.x+x.w/2,y:x.y+x.h/2}:{x:x.x,y:x.y}}
-function autoAssign(it,list){if(!isP(it)||it.vt!==undefined||(it.v&&!it.va))return;const c=list.filter(x=>x.t==='room'&&x.l&&inside(x,it)).sort((a,b)=>a.w*a.h-b.w*b.h)[0];
+function inside(x,p){return x.t==='poly'?inPoly(x.pts,p):x.t==='room'?p.x>=x.x&&p.x<=x.x+x.w&&p.y>=x.y&&p.y<=x.y+x.h:x.t==='zone'?(x.sh==='rect'?Math.abs(p.x-x.x)<=x.w/2&&Math.abs(p.y-x.y)<=x.h/2:Math.hypot(p.x-x.x,p.y-x.y)<=x.r):false}
+function tgCenter(x){return x.t==='poly'?polyC(x.pts):x.t==='room'?{x:x.x+x.w/2,y:x.y+x.h/2}:{x:x.x,y:x.y}}
+function autoAssign(it,list){if(!isP(it)||it.vt!==undefined||(it.v&&!it.va))return;const ar=x=>x.t==='poly'?Math.abs(x.pts.reduce((a,q,i,P)=>{const n=P[(i+1)%P.length];return a+q[0]*n[1]-n[0]*q[1]},0)/2):x.w*x.h;const c=list.filter(x=>(x.t==='room'||(x.t==='poly'&&!x.draft))&&x.l&&inside(x,it)).sort((a,b)=>ar(a)-ar(b))[0];
  if(c){if(!c.id)c.id=uid();it.v=c.id;it.va=1}else if(it.va){delete it.v;delete it.va}}
 const OBJDEF=Object.entries(OBJ).map(([k,[n]])=>[k,n]);
 const PEN={r:'#d00000',b:'#0050c8',k:'#111111',g:'#08803a'};
 const MARK=Object.entries(PEN).map(([k,c])=>`<marker id="m-${k}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`).join('');
 const GRID='<pattern id="g1" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#e4e8eb" stroke-width="1"/></pattern><pattern id="g5" width="200" height="200" patternUnits="userSpaceOnUse"><rect width="200" height="200" fill="url(#g1)"/><path d="M200 0H0V200" fill="none" stroke="#c9d0d6" stroke-width="1.5"/></pattern>';
-const TOOLS=[['sel','Auswahl'],['wall','Wand'],['room','Raum'],['door','Tür'],['win','Fenster'],['stair','Treppe'],['arrow','Pfeil'],['lead','Zeigelinie'],['hose','Schlauch'],['rail','Gleis'],['road','Straße'],['barrier','Absperrung'],['zone','Bereich'],['free','Freihand'],['text','Text'],['pal','Zeichen …']];
+const TOOLS=[['sel','Auswahl'],['wall','Wand'],['room','Raum'],['door','Tür'],['win','Fenster'],['stair','Treppe'],['arrow','Pfeil'],['lead','Zeigelinie'],['hose','Schlauch'],['rail','Gleis'],['road','Straße'],['poly','Umriss'],['barrier','Absperrung'],['zone','Bereich'],['free','Freihand'],['text','Text'],['pal','Zeichen …']];
 const LBL={door:0,win:0,wall:0,img:0};
-const SCAL=['sym','obj','door','win','stair','text'],ROT=['sym','obj','door','win','stair','text','img'],STRK=['wall','room','line'];
+const SCAL=['sym','obj','door','win','stair','text'],ROT=['sym','obj','door','win','stair','text','img'],STRK=['wall','room','line','poly'];
 
 const map=$('map');let vb={x:0,y:0,w:1600,h:1000},tool='sel',placing=null,pen='r',sel=-1,act=null,undo=[],snapOn=true;
 const ptrs=new Map();let pinch=null;
@@ -382,6 +389,8 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
   if(m)s+=halo(m[0],m[1]-12,it.l,22,it.k==='hose'?'#0050c8':c);break}
  case 'zone':{const Z=ZK[it.zk||'gef'],R=it.sh==='rect';s=(R?`<rect x="${r1(it.x-it.w/2)}" y="${r1(it.y-it.h/2)}" width="${r1(it.w)}" height="${r1(it.h)}"`:`<circle cx="${it.x}" cy="${it.y}" r="${r1(it.r)}"`)+` fill="${Z[1]}" fill-opacity=".07" stroke="${Z[1]}" stroke-width="3.5" stroke-dasharray="${Z[2]}"/>`+halo(it.x,it.y-(R?it.h/2:it.r)-10,it.l,24,Z[1]);break}
  case 'box':{const L=(it.l||'').split('|'),h=L.length*30+24,y0=it.y-h/2;s=`<rect x="${r1(it.x-it.w/2)}" y="${r1(y0)}" width="${it.w}" height="${h}" fill="#fff" stroke="#1f4fd1" stroke-width="3" stroke-dasharray="10 6"/>`+L.map((t,i)=>{const b=t[0]==='*'||t[0]==='!';return `<text x="${r1(it.x)}" y="${r1(y0+33+i*30)}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${b?24:21}" font-weight="${b?'bold':'normal'}" fill="${t[0]==='!'?'#e00000':'#111'}">${esc(b?t.slice(1):t)}</text>`}).join('');break}
+ case 'poly':{const d=it.pts.map((q,i)=>(i?'L':'M')+r1(q[0])+','+r1(q[1])).join('');if(it.draft){const f=it.pts[0];s=`<path d="${d}" fill="none" stroke="#1d5fbf" stroke-width="4"/>`+it.pts.map(q=>`<circle cx="${r1(q[0])}" cy="${r1(q[1])}" r="6" fill="#1d5fbf"/>`).join('')+`<circle cx="${r1(f[0])}" cy="${r1(f[1])}" r="16" fill="#fff" fill-opacity=".6" stroke="#1d5fbf" stroke-width="4"/>`;break}
+  const C=polyC(it.pts);s=`<path d="${d}Z" fill="#e9e3d9" fill-opacity=".85" stroke="#3a3f44" stroke-width="${it.w||5}" stroke-linejoin="round"/>`+halo(C.x,C.y+8,it.l,22);break}
  case 'text':s=`<g transform="${tf}">${halo(0,0,it.l||' ',26,PEN[it.c]||'#111',it.a||'start')}</g>`;break;
  case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);const V=S.c==='Personen'&&it.v?(L||items()).find(x=>x.id===it.v):null,VC=V&&!inside(V,it)?tgCenter(V):null;
   if(VC)s=`<line x1="${r1(it.x)}" y1="${r1(it.y)}" x2="${r1(VC.x)}" y2="${r1(VC.y)}" stroke="#444" stroke-width="2.5" stroke-dasharray="8 6" pointer-events="none"/><circle cx="${r1(VC.x)}" cy="${r1(VC.y)}" r="5" fill="#444" pointer-events="none"/>`;
@@ -406,8 +415,8 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
  if(SCAL.includes(it.t))o+=`<g data-h="sc"><circle cx="${r1(b.x+b.width+6)}" cy="${r1(b.y+b.height+6)}" r="${r1(hr*.6)}" fill="#d00000" stroke="#fff" stroke-width="${r1(hr/8)}"/><path d="M${r1(b.x+b.width+6-hr*.25)},${r1(b.y+b.height+6-hr*.25)} l${r1(hr*.5)},${r1(hr*.5)}" stroke="#fff" stroke-width="${r1(hr/9)}"/></g>`;
  if(it.t==='line'&&it.pts.length===2)o+=H(...it.pts[0],'l0')+H(...it.pts[1],'l1');
  $('ov').innerHTML=o}
-function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
- const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',road:'Straße',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',leader:'Zeigelinie',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:ZK[it.zk||'gef']?.[0]||'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
+function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it&&tool==='poly'){const D=s&&s.items.find(x=>x.draft);P.innerHTML=`<span class="hint">Umriss: Ecken nacheinander antippen (Raster mit # ein/aus). Zum Schließen den ersten Punkt antippen.</span>${D?`<button class="sm pri" data-a="pfin">Umriss schließen (${D.pts.length} Ecken)</button><button class="sm ghost" data-a="pcan">Verwerfen</button>`:''}`;return}if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
+ const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',road:'Straße',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',leader:'Zeigelinie',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:ZK[it.zk||'gef']?.[0]||'Bereich',poly:'Gebäudeumriss',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
  +(it.t==='obj'&&it.k==='untafel'?(()=>{const vs=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k)),bad=(it.gn&&!/^X?\d{2,3}$/.test(it.gn))||(it.un&&!/^\d{4}$/.test(it.un));return `<span class="grp"><span class="szl">Nr. Gefahr</span><input id="pGn" value="${esc(it.gn||'')}" maxlength="4" autocapitalize="characters" placeholder="33" style="flex:0 0 80px"><span class="szl">UN-Nr.</span><input id="pUn" value="${esc(it.un||'')}" maxlength="4" inputmode="numeric" placeholder="1203" style="flex:0 0 90px"></span><input id="pSt" value="${esc(it.stoff||'')}" placeholder="Stoff (optional)" style="flex:1 1 140px"><span class="grp"><span class="szl">an</span><select id="pUv" style="width:auto;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(x.l||OBJ[x.k][0])}</option>`).join('')}</select></span><span id="pUw" class="szl" style="color:var(--red)"${bad?'':' hidden'}>Format prüfen: Nr. Gefahr 2–3 Ziffern (ggf. mit X), UN-Nr. 4 Ziffern</span>`})():'')
  +(it.t==='zone'?`<span class="grp"><span class="szl">Art</span><select id="pZk" style="width:auto;min-height:36px">${Object.entries(ZK).map(([k,v])=>`<option value="${k}"${(it.zk||'gef')===k?' selected':''}>${v[0]}</option>`).join('')}</select><span class="szl">Form</span><select id="pZs" style="width:auto;min-height:36px"><option value="circle"${it.sh!=='rect'?' selected':''}>Kreis</option><option value="rect"${it.sh==='rect'?' selected':''}>Rechteck</option></select></span>`:'')
@@ -436,7 +445,7 @@ function render(){renderMap();renderProps();renderTools()}
 let svT;function saveSoon(){clearTimeout(svT);svT=setTimeout(save,400)}
 function snap(){const s=sh();if(!s)return;undo.push({id:s.id,j:JSON.stringify(s.items)});if(undo.length>80)undo.shift()}
 function doUndo(){const u=undo.pop();if(!u)return toast('Nichts rückgängig zu machen');const i=sheets().findIndex(x=>x.id===u.id);if(i<0)return;sheets()[i].items=JSON.parse(u.j);shIdx=i;sel=-1;save();renderSheets();render()}
-function setTool(t){if(t==='pal'){openPal();return}tool=t;if(t!=='place')placing=null;sel=-1;render()}
+function setTool(t){if(t==='pal'){openPal();return}if(t!=='poly'&&items().some(x=>x.draft))finishPoly();tool=t;if(t!=='place')placing=null;sel=-1;render()}
 function renderTools(){$('tools').innerHTML=TOOLS.map(([k,n])=>`<button class="sm${tool===k||(k==='pal'&&tool==='place')?' on':''}" data-t="${k}">${n}</button>`).join('');
  $('quickSym').innerHTML=recent.map(k=>`<button class="sm ico${tool==='place'&&placing===k?' on':''}" data-q="${k}" title="${esc(SYM[k]?.n||OBJ[k]?.[0])}"><img alt="${esc(SYM[k]?.n||OBJ[k]?.[0])}" src="${thumb(k)}"></button>`).join('')+'<span class="sep"></span>'+Object.keys(PEN).map(k=>`<button class="sm dot${pen===k?' on':''}" data-pen="${k}" style="background:${PEN[k]}" aria-label="Stiftfarbe"></button>`).join('')}
 const thumb=k=>SYM[k]?SYM[k].uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${k==='lok'||k==='wagen'||k==='binnen'||k==='hotel'?'-560 -280 1120 560':k==='untafel'||k.startsWith('abl_')?'-100 -100 200 200':k==='lkw'||k==='bus'?'-250 -125 500 250':'-100 -70 200 140'}">${OBJ[k][1]}</svg>`);
@@ -455,10 +464,10 @@ $('palL').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;$('dPal'
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 function rdp(p,eps){if(p.length<3)return p;let dm=0,ix=0;const[a,b]=[p[0],p[p.length-1]];for(let i=1;i<p.length-1;i++){const d=segD(p[i],a,b);if(d>dm){dm=d;ix=i}}return dm>eps?[...rdp(p.slice(0,ix+1),eps).slice(0,-1),...rdp(p.slice(ix),eps)]:[a,b]}
 function segD(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;let t=l?((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)}
-function shift(it,o,dx,dy){if(it.t==='wall'){it.x1=o.x1+dx;it.y1=o.y1+dy;it.x2=o.x2+dx;it.y2=o.y2+dy}else if(it.t==='line')it.pts=o.pts.map(q=>[q[0]+dx,q[1]+dy]);else{it.x=o.x+dx;it.y=o.y+dy}}
+function shift(it,o,dx,dy){if(it.t==='wall'){it.x1=o.x1+dx;it.y1=o.y1+dy;it.x2=o.x2+dx;it.y2=o.y2+dy}else if(it.t==='line'||it.t==='poly')it.pts=o.pts.map(q=>[q[0]+dx,q[1]+dy]);else{it.x=o.x+dx;it.y=o.y+dy}}
 const setVB=()=>{map.setAttribute('viewBox',`${r1(vb.x)} ${r1(vb.y)} ${r1(vb.w)} ${r1(vb.h)}`);const o=$('ov');if(o)o.innerHTML=''};
 function upd(i){const g=map.querySelector(`#world>[data-i="${i}"]`);if(!g){renderMap();return}g.outerHTML=rItem(items()[i],i,items());const o=$('ov');if(o)o.innerHTML=''}
-function wallSegs(){const S=[];for(const w of items()){if(w.t==='wall')S.push([w.x1,w.y1,w.x2,w.y2]);if(w.t==='room'){const{x,y,w:W,h:H}=w;S.push([x,y,x+W,y],[x+W,y,x+W,y+H],[x+W,y+H,x,y+H],[x,y+H,x,y])}}return S}
+function wallSegs(){const S=[];for(const w of items()){if(w.t==='wall')S.push([w.x1,w.y1,w.x2,w.y2]);if(w.t==='poly'&&!w.draft)w.pts.forEach((q,i,P)=>{const n=P[(i+1)%P.length];S.push([q[0],q[1],n[0],n[1]])});if(w.t==='room'){const{x,y,w:W,h:H}=w;S.push([x,y,x+W,y],[x+W,y,x+W,y+H],[x+W,y+H,x,y+H],[x,y+H,x,y])}}return S}
 function snapOpening(it,c){const W=(it.t==='door'?40:60)*(it.s||1),th=Math.max(30,28*pxW());let b=null;
  for(const [x1,y1,x2,y2] of wallSegs()){const dx=x2-x1,dy=y2-y1,l2=dx*dx+dy*dy;if(!l2)continue;const t=Math.max(0,Math.min(1,((c.x-x1)*dx+(c.y-y1)*dy)/l2)),px=x1+t*dx,py=y1+t*dy,d=Math.hypot(c.x-px,c.y-py);if(d<th&&(!b||d<b.d))b={d,px,py,a:Math.atan2(dy,dx)*180/Math.PI}}
  if(!b)return false;const cur=it.r||0,dif=v=>Math.abs(((v-cur)%360+540)%360-180);let r=dif(b.a)<=dif(b.a+180)?b.a:b.a+180;r=Math.round(((r%360)+360)%360*10)/10;
@@ -475,6 +484,7 @@ map.onpointerdown=e=>{if(!need())return;
  if(ptrs.size===2){if(act&&act.type==='create'){items().pop();undo.pop();sel=-1;renderMap()}act=null;const[a,b]=[...ptrs.values()];pinch={d:dist(a,b),vb:{...vb},m:toW((a.x+b.x)/2,(a.y+b.y)/2)};setVB();return}
  if(ptrs.size>2)return;const p=toW(e.clientX,e.clientY),q=sp(p);
  const h=e.target.closest('[data-h]');if(h&&sel>=0){snap();const i0=items()[sel];act={type:'h',h:h.dataset.h,s0:i0.s||1,d0:Math.max(Math.hypot(p.x-i0.x,p.y-i0.y),1)};return}
+ if(tool==='poly'){const L=items();let P=L.find(x=>x.draft);if(P){const f=P.pts[0];if(P.pts.length>=3&&Math.hypot(p.x-f[0],p.y-f[1])<28*pxW()){finishPoly();return}P.pts.push([q.x,q.y])}else{snap();P={t:'poly',pts:[[q.x,q.y]],l:'',draft:1,id:uid()};L.push(P)}act={type:'polypt'};renderMap();renderProps();return}
  const g=e.target.closest('#world>[data-i]');
  if(tool==='sel'){if(g){sel=+g.dataset.i;snap();act={type:'move',p0:p,o:JSON.parse(JSON.stringify(items()[sel])),mv:0}}else{sel=-1;act={type:'pan',c:{x:e.clientX,y:e.clientY},vb:{...vb}}}render();return}
  snap();let n=null;
@@ -493,6 +503,7 @@ map.onpointermove=e=>{if(!ptrs.has(e.pointerId))return;e.preventDefault();ptrs.s
  if(pinch&&ptrs.size===2){const[a,b]=[...ptrs.values()],f=pinch.d/Math.max(dist(a,b),1),w=Math.min(Math.max(pinch.vb.w*f,150),20000),h=w*pinch.vb.h/pinch.vb.w;
   vb={x:pinch.m.x-(pinch.m.x-pinch.vb.x)*w/pinch.vb.w,y:pinch.m.y-(pinch.m.y-pinch.vb.y)*h/pinch.vb.h,w,h};setVB();return}
  if(!act)return;const p=toW(e.clientX,e.clientY),q=sp(p),it=items()[sel];
+ if(act.type==='polypt'){const L=items(),P=L.find(x=>x.draft);if(P){P.pts[P.pts.length-1]=[q.x,q.y];upd(L.indexOf(P))}return}
  if(act.type==='pan'){const r=map.getBoundingClientRect(),k=Math.max(vb.w/r.width,vb.h/r.height);vb.x=act.vb.x-(e.clientX-act.c.x)*k;vb.y=act.vb.y-(e.clientY-act.c.y)*k;setVB();return}
  if(act.type==='move'){let dx=p.x-act.p0.x,dy=p.y-act.p0.y;if(Math.hypot(dx,dy)<4*pxW()&&!act.mv)return;act.mv=1;
   if(it.t==='door'||it.t==='win'){const c=opCenter(act.o);it.r=act.o.r;if(snapOpening(it,{x:c.x+dx,y:c.y+dy})){upd(sel);return}it.r=act.o.r}if(['wall','room','door','win','stair'].includes(it.t)){dx=snapV(dx);dy=snapV(dy)}shift(it,act.o,r1(dx),r1(dy));upd(sel);return}
@@ -506,6 +517,7 @@ map.onpointermove=e=>{if(!ptrs.has(e.pointerId))return;e.preventDefault();ptrs.s
   default:if(it.t==='sym'||it.t==='obj'||it.t==='text'){it.x=r1(p.x);it.y=r1(p.y)}else if((it.t==='door'||it.t==='win')&&snapOpening(it,p)){}else{it.x=q.x;it.y=q.y}}upd(sel)}};
 map.onpointerup=map.onpointercancel=e=>{if(e.pointerId===penId)penId=null;if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);if(pinch){if(ptrs.size<2){pinch=null;renderMap()}act=null;saveVb();return}
  if(!act)return;const it=items()[sel];
+ if(act.type==='polypt'){act=null;saveSoon();renderMap();return}
  if(act.type==='create'){let bad=false;
   if(it.t==='wall')bad=Math.hypot(it.x2-it.x1,it.y2-it.y1)<20;
   if(it.t==='room')bad=it.w<20||it.h<20;
@@ -530,7 +542,7 @@ function bbox(list){const m=$('meas');m.innerHTML=`<defs>${MARK}</defs><g>${item
 function fit(){const s=sh();if(!s||!s.items.length){vb={x:0,y:0,w:1600,h:1000};renderMap();return}const b=bbox(s.items),r=map.getBoundingClientRect(),ar=r.height/r.width||.62;let w=Math.max(b.width+160,1200),h=b.height+160;if(h/w>ar)w=h/ar;else h=w*ar;vb={x:b.x+b.width/2-w/2,y:b.y+b.height/2-h/2,w,h};renderMap();saveVb()}
 $('zFit').onclick=fit;$('mUndo').onclick=doUndo;
 $('mGrid').onclick=()=>{snapOn=!snapOn;$('mGrid').classList.toggle('on',snapOn);renderMap()};
-$('props').onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a,s=sh(),it=s?.items[sel];if(!a||!it)return;snap();
+$('props').onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a,s=sh(),it=s?.items[sel];if(a==='pfin'){finishPoly();return}if(a==='pcan'){cancelPoly();return}if(!a||!it)return;snap();
  if(a==='s-'||a==='s+')it.s=Math.max(.2,Math.min(8,Math.round((it.s||1)*(a==='s+'?1.15:1/1.15)*100)/100));
  if(a==='r-')it.r=((it.r||0)-15)%360;if(a==='r+')it.r=((it.r||0)+15)%360;if(a==='r90')it.r=((it.r||0)+90)%360;
  if(a==='flip')it.f=-(it.f||1);
@@ -564,6 +576,7 @@ $('dSheet').onclick=e=>{const a=e.target.dataset.a;if(!a)return;const s=sh();
  if(a==='unlock'){snap();s.items.forEach(x=>delete x.lock);save();render();$('dSheet').close();toast('Fixierungen gelöst')}
  if(a==='bg')$('bgFile').click();
  if(a==='png'){$('dSheet').close();exportPng(s)}
+ if(a==='osm'){$('dSheet').close();osmPt=null;$('osmSel').textContent='';$('osmRes').innerHTML='';$('osmGo').disabled=true;osmState('');$('dOsm').showModal()}
  if(a==='live'){const L=s.items.filter(x=>x.live);if(!L.length){toast('Dieses Blatt enthält keine Pegelzeile');return}liveLoad().catch(()=>false).then(ok=>{snap();L.forEach(x=>x.l=liveShort(x.km));save();render();$('dSheet').close();toast(ok?'Pegelwerte aktualisiert':'PEGELONLINE nicht erreichbar – letzte gespeicherte Werte')})}
  if(a==='clr'&&confirm('Alle Elemente dieses Blatts löschen?')){snap();s.items=[];sel=-1;save();render();$('dSheet').close()}
  if(a==='del'&&confirm('Blatt „'+s.name+'“ löschen?')){sheets().splice(shIdx,1);if(!sheets().length)sheets();save();$('dSheet').close();openSheet(0)}
@@ -750,13 +763,13 @@ $('tabMap').onclick=()=>showTab('map');$('tabPers').onclick=()=>showTab('pers');
 const PDB={_db:null,open(){return this._db||(this._db=new Promise((ok,no)=>{const r=indexedDB.open('lagekarte-fotos',1);r.onupgradeneeded=()=>r.result.createObjectStore('ph');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}))},
  async tx(mode,fn){const db=await this.open();return new Promise((ok,no)=>{const t=db.transaction('ph',mode),s=t.objectStore('ph');const r=fn(s);t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>no(t.error)})},
  put(id,b){return this.tx('readwrite',s=>s.put(b,id))},get(id){return this.tx('readonly',s=>s.get(id))},del(id){return this.tx('readwrite',s=>s.delete(id))},keys(){return this.tx('readonly',s=>s.getAllKeys())}};
-const PHOK=['obj','room','zone','sym','box','text'];
+const PHOK=['obj','room','zone','sym','box','text','poly'];
 function phBadge(it){const n=it.ph&&it.ph.length;if(!n)return'';let bx=it.x,by=it.y-30;
- if(it.t==='sym'){const z=110*(it.s||1);bx=it.x+z*.45;by=it.y-z*.45}else if(it.t==='obj'&&VDIM[it.k]){bx=it.x+VDIM[it.k][0]*(it.s||1);by=it.y-VDIM[it.k][1]*(it.s||1)}else if(it.t==='room'){bx=it.x+it.w-18;by=it.y+18}else if(it.t==='zone'){if(it.sh==='rect'){bx=it.x+it.w/2-18;by=it.y-it.h/2+18}else{bx=it.x+it.r*.7;by=it.y-it.r*.7}}
+ if(it.t==='sym'){const z=110*(it.s||1);bx=it.x+z*.45;by=it.y-z*.45}else if(it.t==='obj'&&VDIM[it.k]){bx=it.x+VDIM[it.k][0]*(it.s||1);by=it.y-VDIM[it.k][1]*(it.s||1)}else if(it.t==='room'){bx=it.x+it.w-18;by=it.y+18}else if(it.t==='poly'){const C=polyC(it.pts);bx=C.x+30;by=C.y-30}else if(it.t==='zone'){if(it.sh==='rect'){bx=it.x+it.w/2-18;by=it.y-it.h/2+18}else{bx=it.x+it.r*.7;by=it.y-it.r*.7}}
  return `<g transform="translate(${r1(bx)},${r1(by)})" pointer-events="none"><circle r="17" fill="#1d5fbf" stroke="#fff" stroke-width="3"/><path d="M-9,-4h4l2,-3h6l2,3h4v11h-18z" fill="#fff"/><circle r="3.5" cy="1.5" fill="#1d5fbf"/><text x="14" y="-12" font-size="14" font-family="Arial" font-weight="bold" fill="#1d5fbf" stroke="#fff" stroke-width="3" paint-order="stroke">${n}</text></g>`}
 async function imgToJpeg(file,max=1600,q=.75){const u=URL.createObjectURL(file);try{const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=u});const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return await new Promise(ok=>c.toBlob(ok,'image/jpeg',q))}finally{URL.revokeObjectURL(u)}}
 let phIt=null,phUrls=[];
-function phName(it){return it.t==='sym'?SYM[it.k].n:it.t==='obj'?(it.l||OBJ[it.k][0]):it.l||({room:'Raum',zone:'Bereich',box:'Infokasten',text:'Text'}[it.t])}
+function phName(it){return it.t==='poly'?(it.l||'Gebäude'):it.t==='sym'?SYM[it.k].n:it.t==='obj'?(it.l||OBJ[it.k][0]):it.l||({room:'Raum',zone:'Bereich',box:'Infokasten',text:'Text'}[it.t])}
 async function phOpen(it){phIt=it;$('phTitle').textContent='Fotos – '+phName(it);$('phBig').hidden=true;$('phGrid').hidden=false;await phRender();$('dPhoto').showModal()}
 async function phRender(){phUrls.forEach(URL.revokeObjectURL);phUrls=[];const L=phIt.ph||[];const parts=[];
  for(const [j,p] of L.entries()){let u='';try{const b=await PDB.get(p.id);if(b){u=URL.createObjectURL(b);phUrls.push(u)}}catch(e){}
@@ -834,6 +847,48 @@ $('scanFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(
  catch(x){scanUI('Fehler: '+(x.message||x)+'. Beim ersten Scan wird eine Internetverbindung benötigt.')}
  finally{$('scanShoot').disabled=$('scanSkip').disabled=false}};
 $('scanOk').onclick=()=>{scanSync();const rec=recOf(scanRef);SCF.forEach(([k])=>{if(scan.r[k])rec[k]=scan.r[k]});save();$('dScan').close();renderPers();toast('Daten übernommen')};
+
+// ===== Gebäudeumriss (Polygon) =====
+function polyC(P){let x=0,y=0;for(const q of P)x+=q[0],y+=q[1];return{x:x/P.length,y:y/P.length}}
+function inPoly(P,p){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const[xi,yi]=P[i],[xj,yj]=P[j];if(((yi>p.y)!==(yj>p.y))&&(p.x<(xj-xi)*(p.y-yi)/((yj-yi)||1e-9)+xi))c=!c}return c}
+let polyDraft=null;
+function finishPoly(){const L=items(),P=L.find(x=>x.draft);polyDraft=null;if(P){delete P.draft;P.pts=P.pts.filter((q,i,a)=>i===0||Math.hypot(q[0]-a[i-1][0],q[1]-a[i-1][1])>2);if(P.pts.length<3){L.splice(L.indexOf(P),1);toast('Umriss verworfen (mindestens 3 Ecken)')}else{sel=L.indexOf(P);toast('Umriss geschlossen – jetzt beschriften, z. B. Hausnummer')}}save();render()}
+function cancelPoly(){const L=items(),i=L.findIndex(x=>x.draft);if(i>=0)L.splice(i,1);polyDraft=null;save();render()}
+
+// ===== OpenStreetMap: Karte und Gebäude =====
+const OSMT='https://tile.openstreetmap.org/',NOMI='https://nominatim.openstreetmap.org/search',OVP='https://overpass-api.de/api/interpreter';
+let osmPt=null;
+const merc=(lat,lon,z)=>{const n=256*2**z,s=Math.sin(lat*Math.PI/180);return{x:(lon+180)/360*n,y:(.5-Math.log((1+s)/(1-s))/(4*Math.PI))*n}};
+function osmState(t){$('osmState').textContent=t}
+function osmPick(p){osmPt=p;$('osmSel').textContent='Gewählt: '+p.label+` (${p.lat.toFixed(5)}, ${p.lon.toFixed(5)})`;$('osmGo').disabled=false}
+$('osmSearch').onclick=async()=>{const q=$('osmQ').value.trim();if(!q)return;osmState('Suche …');$('osmRes').innerHTML='';
+ try{const r=await fetch(`${NOMI}?format=jsonv2&limit=6&countrycodes=de&accept-language=de&q=${encodeURIComponent(q)}`);if(!r.ok)throw 0;const L=await r.json();
+  $('osmRes').innerHTML=L.length?L.map((x,i)=>`<button class="sm" data-i="${i}" style="text-align:left;width:100%">${esc(x.display_name)}</button>`).join(''):'<p class="hint">Nichts gefunden.</p>';osmState('');
+  $('osmRes').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const x=L[+b.dataset.i];osmPick({lat:+x.lat,lon:+x.lon,label:x.display_name.split(',').slice(0,3).join(',')})}}
+ catch(e){osmState('Adresssuche nicht erreichbar (Internet?).')}};
+$('osmQ').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('osmSearch').click()}};
+$('osmGeo').onclick=()=>{if(!navigator.geolocation)return osmState('Standort nicht verfügbar.');osmState('Standort wird bestimmt …');
+ navigator.geolocation.getCurrentPosition(p=>{osmState('');osmPick({lat:p.coords.latitude,lon:p.coords.longitude,label:'Aktueller Standort (±'+Math.round(p.coords.accuracy)+' m)'})},()=>osmState('Standort nicht freigegeben oder nicht bestimmbar.'),{enableHighAccuracy:true,timeout:15000})};
+function loadImg(u){return new Promise((ok,no)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>ok(i);i.onerror=no;i.src=u})}
+async function osmTiles(c,z,hp){const tx0=Math.floor((c.x-hp)/256),tx1=Math.floor((c.x+hp)/256),ty0=Math.floor((c.y-hp)/256),ty1=Math.floor((c.y+hp)/256);
+ const cv=document.createElement('canvas');cv.width=Math.round(2*hp);cv.height=Math.round(2*hp);const g=cv.getContext('2d');g.fillStyle='#f2efe9';g.fillRect(0,0,cv.width,cv.height);const jobs=[];
+ for(let tx=tx0;tx<=tx1;tx++)for(let ty=ty0;ty<=ty1;ty++)jobs.push(loadImg(`${OSMT}${z}/${tx}/${ty}.png`).then(im=>g.drawImage(im,tx*256-(c.x-hp),ty*256-(c.y-hp))).catch(()=>{}));
+ await Promise.all(jobs);return cv.toDataURL('image/jpeg',.8)}
+async function osmBuildings(pt,R){const q=`[out:json][timeout:25];(way["building"](around:${R},${pt.lat},${pt.lon}););out geom 400;`;
+ const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),30000);try{const r=await fetch(OVP,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ac.signal});if(!r.ok)throw new Error('HTTP '+r.status);return (await r.json()).elements||[]}finally{clearTimeout(tm)}}
+$('osmGo').onclick=async()=>{if(!osmPt)return;const R=+$('osmR').value,wantMap=$('osmMap').checked,wantB=$('osmBld').checked;if(!wantMap&&!wantB)return;$('osmGo').disabled=true;
+ const z=R<=150?18:17,lat=osmPt.lat,mpp=156543.03392*Math.cos(lat*Math.PI/180)/2**z,k=mpp*40,c=merc(lat,osmPt.lon,z),hp=Math.ceil(R/mpp*1.1);
+ const cx=snapV(vb.x+vb.w/2),cy=snapV(vb.y+vb.h/2),W=r1(2*hp*k),L=items();snap();let nB=0,msg=[];
+ try{let front=0;
+  if(wantMap){osmState('Kartenkacheln werden geladen …');const src=await osmTiles(c,z,hp);L.splice(0,0,{t:'img',x:r1(cx-hp*k),y:r1(cy-hp*k),w:W,h:W,ar:1,src,lock:1,op:.85});front=1}
+  if(wantB){osmState('Gebäudeumrisse werden geladen …');try{const E=await osmBuildings(osmPt,R);const B=[];
+    for(const e of E){if(e.type!=='way'||!e.geometry||e.geometry.length<4)continue;const pts=e.geometry.map(g=>{const m=merc(g.lat,g.lon,z);return[r1(cx+(m.x-c.x)*k),r1(cy+(m.y-c.y)*k)]});if(pts.length>3&&pts[0][0]===pts[pts.length-1][0]&&pts[0][1]===pts[pts.length-1][1])pts.pop();
+     const tg=e.tags||{},nm=[tg['addr:street']&&tg['addr:housenumber']?tg['addr:street']+' '+tg['addr:housenumber']:tg['addr:housenumber']||'',tg.name||''].filter(Boolean).join(' – ');B.push({t:'poly',pts,l:nm,id:uid(),osm:1})}
+    L.splice(front,0,...B);nB=B.length;if(!B.length)msg.push('Keine Gebäude in OSM im Umkreis gefunden.')}
+   catch(x){msg.push('Gebäudedaten nicht erreichbar ('+(x.message||'Netz')+'). Umrisse ggf. mit „Umriss“ nachzeichnen.')}}
+  L.push({t:'text',x:r1(cx-hp*k+20),y:r1(cy+hp*k+40),r:0,s:1,l:'Karte/Gebäude: © OpenStreetMap-Mitwirkende (ODbL)',c:'k'});
+  save();$('dOsm').close();sel=-1;render();fit();toast((wantMap?'Karte eingefügt':'')+(wantB?(wantMap?', ':'')+nB+' Gebäudeumrisse':''));if(msg.length)setTimeout(()=>toast(msg.join(' ')),1200)}
+ catch(x){undo.pop();osmState('Fehler: '+(x.message||x))}finally{$('osmGo').disabled=false}};
 
 // Export
 function sheetSVG(s,px){const b=bbox(s.items),pad=40,x=b.x-pad,y=b.y-pad,w=Math.max(b.width+2*pad,200),h=Math.max(b.height+2*pad,150);
