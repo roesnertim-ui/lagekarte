@@ -298,6 +298,7 @@ const SYMDEF=[
 ];
 const SYM={};for(const[c,l]of SYMDEF)for(const[k,n,s]of l)SYM[k]={k,n,c,uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv(s))};
 // Eigene Darstellungen (keine taktischen Zeichen): Objekte für Lageplan / TH
+function untSVG(gn,un){const e=v=>String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));return `<rect x="-80" y="-60" width="160" height="120" rx="4" fill="#ff8c00" stroke="#111" stroke-width="7"/><line x1="-80" y1="0" x2="80" y2="0" stroke="#111" stroke-width="6"/><text y="-13" text-anchor="middle" font-size="44" font-weight="bold" font-family="Arial,Helvetica,sans-serif">${e(gn)}</text><text y="45" text-anchor="middle" font-size="44" font-weight="bold" font-family="Arial,Helvetica,sans-serif">${e(un)}</text>`}
 const OBJ={
  pkw:['Pkw (Draufsicht)','<rect x="-90" y="-38" width="180" height="76" rx="18" fill="#e3e6e9" stroke="#000" stroke-width="3"/><path d="M28,-31 L52,-34 L52,34 L28,31 Z M-52,-29 L-66,-31 L-66,31 L-52,29 Z" fill="#9fb3c8" stroke="#000" stroke-width="2"/>'],
  lkw:['Lkw (Draufsicht)','<rect x="-210" y="-50" width="350" height="100" fill="#e3e6e9" stroke="#000" stroke-width="3"/><rect x="146" y="-48" width="64" height="96" rx="8" fill="#e3e6e9" stroke="#000" stroke-width="3"/><path d="M196,-42 L206,-42 L206,42 L196,42 Z" fill="#9fb3c8" stroke="#000" stroke-width="2"/>'],
@@ -307,8 +308,16 @@ const OBJ={
  hyd:['Wasserentnahme','<circle r="22" fill="#fff" stroke="#0050c8" stroke-width="6"/><circle r="7" fill="#0050c8"/>'],
  lok:['Lok (Draufsicht)','<path d="M-380,-58 L330,-58 Q380,-50 380,0 Q380,50 330,58 L-380,58 Z" fill="#d9dde1" stroke="#000" stroke-width="3"/><path d="M340,-46 Q366,-38 366,0 Q366,38 340,46" fill="none" stroke="#5a7a99" stroke-width="8"/><rect x="-120" y="-30" width="240" height="60" fill="none" stroke="#000" stroke-width="2"/>'],
  wagen:['Wagen (Draufsicht)','<rect x="-520" y="-58" width="1040" height="116" rx="10" fill="#e3e6e9" stroke="#000" stroke-width="3"/><path d="M-440,-58 v116 M440,-58 v116" stroke="#000" stroke-width="2"/><path d="M-520,0 h-14 M520,0 h14" stroke="#000" stroke-width="6"/>'],
+ binnen:['Binnenschiff (Draufsicht)','<path d="M-430,-55 L330,-55 Q450,-48 450,0 Q450,48 330,55 L-430,55 Q-450,55 -450,35 L-450,-35 Q-450,-55 -430,-55 Z" fill="#c8b9a5" stroke="#000" stroke-width="3"/>'+[-300,-150,0,150].map(x=>`<rect x="${x}" y="-40" width="140" height="80" fill="#8c7b66" stroke="#000" stroke-width="2"/>`).join('')+'<rect x="-432" y="-42" width="86" height="84" rx="6" fill="#fff" stroke="#000" stroke-width="2.5"/><rect x="-372" y="-34" width="14" height="68" fill="#9fb3c8"/>'],
+ hotel:['Hotelschiff (Draufsicht)','<path d="M-480,-70 L360,-70 Q500,-60 500,0 Q500,60 360,70 L-480,70 Q-500,70 -500,45 L-500,-45 Q-500,-70 -480,-70 Z" fill="#fff" stroke="#000" stroke-width="3"/><rect x="-460" y="-56" width="800" height="112" rx="10" fill="#e6edf3" stroke="#000" stroke-width="2"/>'+Array.from({length:26},(_,i)=>`<rect x="${-450+i*30}" y="-54" width="18" height="10" fill="#5a7a99"/><rect x="${-450+i*30}" y="44" width="18" height="10" fill="#5a7a99"/>`).join('')+'<rect x="-300" y="-28" width="420" height="56" rx="8" fill="#cfe0ee" stroke="#5a7a99" stroke-width="2"/><rect x="360" y="-50" width="60" height="100" rx="8" fill="#9fb3c8" stroke="#000" stroke-width="2"/>'],
+ boot:['Sportboot (Draufsicht)','<path d="M-90,-32 L40,-32 Q90,-20 90,0 Q90,20 40,32 L-90,32 Z" fill="#fff" stroke="#000" stroke-width="3"/><rect x="-62" y="-20" width="64" height="40" rx="6" fill="#cfe0ee" stroke="#000" stroke-width="2"/><path d="M10,-24 Q24,0 10,24" fill="none" stroke="#5a7a99" stroke-width="5"/>'],
+ untafel:['UN-Tafel (Warntafel)',untSVG('33','1203')],
+ abl_rd:['Ablage Rettungsdienst','<rect x="-80" y="-80" width="160" height="160" fill="#fff" stroke="#d00000" stroke-width="5" stroke-dasharray="14 8"/><path d="M-12,-50 h24 v38 h38 v24 h-38 v38 h-24 v-38 h-38 v-24 h38 z" fill="#d00000"/>'],
+ abl_ger:['Geräteablage','<rect x="-80" y="-80" width="160" height="160" fill="#dde6f0" stroke="#1d5fbf" stroke-width="5" stroke-dasharray="14 8"/><text y="12" text-anchor="middle" font-size="34" font-weight="bold" font-family="Arial" fill="#1d5fbf">Geräte</text>'],
+ abl_schrott:['Schrottablage','<rect x="-80" y="-80" width="160" height="160" fill="#efe6dc" stroke="#6b5640" stroke-width="5" stroke-dasharray="14 8"/><clipPath id="clSchrott"><rect x="-80" y="-80" width="160" height="160"/></clipPath><g clip-path="url(#clSchrott)">'+[-160,-128,-96,-64,-32,0,32,64,96,128,160].map(o=>`<line x1="${o-80}" y1="80" x2="${o+80}" y2="-80" stroke="#b9a58e" stroke-width="4"/>`).join('')+'</g><text y="12" text-anchor="middle" font-size="32" font-weight="bold" font-family="Arial" fill="#6b5640" stroke="#efe6dc" stroke-width="6" paint-order="stroke">Schrott</text>'],
  nord:['Nordpfeil','<path d="M0,-50 L18,30 L0,18 L-18,30 Z" fill="#111"/><text y="62" text-anchor="middle" font-size="30" font-weight="bold" font-family="Arial">N</text>']};
-const VEH=['pkw','lkw','bus','krad','lok','wagen'];
+const SHIPS=['binnen','hotel','boot'],LANDV=['pkw','lkw','bus','krad','lok','wagen'],VEH=[...LANDV,...SHIPS];
+function vehLabel(k,list){const sh=SHIPS.includes(k),c=list.filter(x=>x.t==='obj'&&(sh?SHIPS:LANDV).includes(x.k)).length;return (sh?'Schiff ':'Fzg ')+String.fromCharCode(65+c%26)+(c>=26?Math.floor(c/26)+1:'')}
 const isP=x=>x&&x.t==='sym'&&SYM[x.k]?.c==='Personen';
 const PKEYS=[['p','Person'],['p_verm','vermisst'],['p_versch','verschüttet'],['p_verl','verletzt'],['p_tot','tot'],['p_ger','gerettet'],['p_zutr','zu transportieren'],['p_tr','transportiert']];
 const pkName=k=>(PKEYS.find(x=>x[0]===k)||[k,SYM[k]?.n||k])[1];
@@ -316,7 +325,8 @@ const histTxt=it=>(it.hist||[]).map(h=>`${hm(new Date(h.t))} ${pkName(h.from)} �
 function tgName(x){return x.t==='obj'?(x.l||OBJ[x.k][0]):x.l||''}
 function targets(list){return list.filter(x=>(x.t==='obj'&&VEH.includes(x.k))||((x.t==='room'||x.t==='zone')&&x.l))}
 function tgKind(x){return x.t==='obj'?'Fahrzeug':x.ghost||x.floor?'Geschoss':x.t==='zone'?'Bereich':'Raum/Gebäude'}
-function inside(x,p){return x.t==='room'?p.x>=x.x&&p.x<=x.x+x.w&&p.y>=x.y&&p.y<=x.y+x.h:x.t==='zone'?Math.hypot(p.x-x.x,p.y-x.y)<=x.r:false}
+const ZK={gef:['Gefahrenbereich','#e00000','14 10'],abs:['Absperrbereich','#ff7a00','22 10'],arb:['Arbeitsbereich','#1d8a3a','6 6']};let zkLast='gef',shLast='circle';
+function inside(x,p){return x.t==='room'?p.x>=x.x&&p.x<=x.x+x.w&&p.y>=x.y&&p.y<=x.y+x.h:x.t==='zone'?(x.sh==='rect'?Math.abs(p.x-x.x)<=x.w/2&&Math.abs(p.y-x.y)<=x.h/2:Math.hypot(p.x-x.x,p.y-x.y)<=x.r):false}
 function tgCenter(x){return x.t==='room'?{x:x.x+x.w/2,y:x.y+x.h/2}:{x:x.x,y:x.y}}
 function autoAssign(it,list){if(!isP(it)||it.vt!==undefined||(it.v&&!it.va))return;const c=list.filter(x=>x.t==='room'&&x.l&&inside(x,it)).sort((a,b)=>a.w*a.h-b.w*b.h)[0];
  if(c){if(!c.id)c.id=uid();it.v=c.id;it.va=1}else if(it.va){delete it.v;delete it.va}}
@@ -370,13 +380,16 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
   else if(it.k==='ground')s+=`<path d="${d}" fill="none" stroke="#6b5640" stroke-width="${it.w||5}"/>`;
   else s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${it.w||4}" stroke-linecap="round" stroke-linejoin="round"${it.k==='arrow'?` marker-end="url(#m-${it.c||'r'})"`:''}/>`;
   if(m)s+=halo(m[0],m[1]-12,it.l,22,it.k==='hose'?'#0050c8':c);break}
- case 'zone':s=`<circle cx="${it.x}" cy="${it.y}" r="${r1(it.r)}" fill="#e00000" fill-opacity=".07" stroke="#e00000" stroke-width="3" stroke-dasharray="14 10"/>`+halo(it.x,it.y-it.r-10,it.l,24,'#c00000');break;
+ case 'zone':{const Z=ZK[it.zk||'gef'],R=it.sh==='rect';s=(R?`<rect x="${r1(it.x-it.w/2)}" y="${r1(it.y-it.h/2)}" width="${r1(it.w)}" height="${r1(it.h)}"`:`<circle cx="${it.x}" cy="${it.y}" r="${r1(it.r)}"`)+` fill="${Z[1]}" fill-opacity=".07" stroke="${Z[1]}" stroke-width="3.5" stroke-dasharray="${Z[2]}"/>`+halo(it.x,it.y-(R?it.h/2:it.r)-10,it.l,24,Z[1]);break}
  case 'box':{const L=(it.l||'').split('|'),h=L.length*30+24,y0=it.y-h/2;s=`<rect x="${r1(it.x-it.w/2)}" y="${r1(y0)}" width="${it.w}" height="${h}" fill="#fff" stroke="#1f4fd1" stroke-width="3" stroke-dasharray="10 6"/>`+L.map((t,i)=>{const b=t[0]==='*'||t[0]==='!';return `<text x="${r1(it.x)}" y="${r1(y0+33+i*30)}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${b?24:21}" font-weight="${b?'bold':'normal'}" fill="${t[0]==='!'?'#e00000':'#111'}">${esc(b?t.slice(1):t)}</text>`}).join('');break}
  case 'text':s=`<g transform="${tf}">${halo(0,0,it.l||' ',26,PEN[it.c]||'#111',it.a||'start')}</g>`;break;
  case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);const V=S.c==='Personen'&&it.v?(L||items()).find(x=>x.id===it.v):null,VC=V&&!inside(V,it)?tgCenter(V):null;
   if(VC)s=`<line x1="${r1(it.x)}" y1="${r1(it.y)}" x2="${r1(VC.x)}" y2="${r1(VC.y)}" stroke="#444" stroke-width="2.5" stroke-dasharray="8 6" pointer-events="none"/><circle cx="${r1(VC.x)}" cy="${r1(VC.y)}" r="5" fill="#444" pointer-events="none"/>`;
   s+=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,[it.ek?'eingeklemmt':'',it.l,V&&!V.ghost&&!V.floor?'→ '+tgName(V):it.vt?'→ '+it.vt:''].filter(Boolean).join(' '),22);break}
- case 'obj':{const O=OBJ[it.k];if(!O)break;s=`<g transform="${tf}">${O[1]}</g>`+halo(it.x,it.y+(it.k==='hyd'?44:it.k==='pkw'||it.k==='krad'?60:72)*(it.s||1),it.l,20);break}
+ case 'obj':{const O=OBJ[it.k];if(!O)break;const UV=it.k==='untafel'&&it.v?(L||items()).find(x=>x.id===it.v):null;
+  if(UV)s=`<line x1="${r1(it.x)}" y1="${r1(it.y)}" x2="${r1(UV.x)}" y2="${r1(UV.y)}" stroke="#ff8c00" stroke-width="3" stroke-dasharray="8 6" pointer-events="none"/><circle cx="${r1(UV.x)}" cy="${r1(UV.y)}" r="6" fill="#ff8c00" pointer-events="none"/>`;
+  const oy={hyd:44,pkw:60,krad:60,boot:56,untafel:84,binnen:84,hotel:98,abl_rd:104,abl_ger:104,abl_schrott:104}[it.k]||72;
+  s+=`<g transform="${tf}">${it.k==='untafel'?untSVG(it.gn,it.un):O[1]}</g>`+halo(it.x,it.y+oy*(it.s||1),it.k==='untafel'?[it.l,it.stoff,UV?'→ '+tgName(UV):''].filter(Boolean).join(' · '):it.l,20);break}
  case 'img':s=`<image href="${it.src}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" opacity="${it.op||.8}" preserveAspectRatio="none"/>`;break}
  return `<g data-i="${i}"${it.lock?' pointer-events="none"':''}>${s}${phBadge(it)}</g>`}
 function roadEdges(list){return list.filter(x=>x.t==='line'&&x.k==='road'&&x.pts.length>1).map(x=>`<path d="${(x.pts.length>2?pds:pd)(x.pts)}" fill="none" stroke="#4a4f55" stroke-width="${(x.w||280)+12}" stroke-linecap="butt" stroke-linejoin="round"/>`).join('')}
@@ -389,13 +402,15 @@ function renderMap(){const s=sh();map.setAttribute('viewBox',`${r1(vb.x)} ${r1(v
  let o=`<rect x="${r1(b.x-6)}" y="${r1(b.y-6)}" width="${r1(b.width+12)}" height="${r1(b.height+12)}" fill="none" stroke="#1d5fbf" stroke-width="${r1(2*px)}" stroke-dasharray="${r1(8*px)} ${r1(5*px)}" pointer-events="none"/>`;
  if(it.t==='wall')o+=H(it.x1,it.y1,'p1')+H(it.x2,it.y2,'p2');
  if(it.t==='room'||it.t==='img')o+=H(it.x+it.w,it.y+it.h,'br');
- if(it.t==='zone')o+=H(it.x+it.r,it.y,'r');
+ if(it.t==='zone')o+=it.sh==='rect'?H(it.x+it.w/2,it.y+it.h/2,'zr'):H(it.x+it.r,it.y,'r');
  if(SCAL.includes(it.t))o+=`<g data-h="sc"><circle cx="${r1(b.x+b.width+6)}" cy="${r1(b.y+b.height+6)}" r="${r1(hr*.6)}" fill="#d00000" stroke="#fff" stroke-width="${r1(hr/8)}"/><path d="M${r1(b.x+b.width+6-hr*.25)},${r1(b.y+b.height+6-hr*.25)} l${r1(hr*.5)},${r1(hr*.5)}" stroke="#fff" stroke-width="${r1(hr/9)}"/></g>`;
  if(it.t==='line'&&it.pts.length===2)o+=H(...it.pts[0],'l0')+H(...it.pts[1],'l1');
  $('ov').innerHTML=o}
 function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.innerHTML=`<span class="hint">${tool==='place'?'Tippen zum Platzieren: <b>'+esc((SYM[placing]||{}).n||(OBJ[placing]||[])[0])+'</b>':tool==='sel'?'Element antippen zum Bearbeiten, roter Punkt = skalieren. Leere Fläche ziehen = verschieben, zwei Finger = zoomen.':'Werkzeug: '+esc((TOOLS.find(t=>t[0]===tool)||[])[1]||'')}</span>`;return}
- const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',road:'Straße',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',leader:'Zeigelinie',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
+ const nm=it.t==='sym'?SYM[it.k].n:it.t==='obj'?OBJ[it.k][0]:{wall:'Wand',room:'Raum',door:'Tür',win:'Fenster',stair:'Treppe',line:{hose:'Schlauchleitung',barrier:'Absperrung',arrow:'Pfeil',free:'Freihand',edge:'Fahrbahnrand',center:'Leitlinie',ground:'Gelände',rail:'Gleis',road:'Straße',water:'Wasserfläche',bank:'Ufer',fair:'Fahrrinne',sect:'Sektor',bound:'Sektorengrenze',leader:'Zeigelinie',yarrow:'Suchrichtung',flowbig:'Fließrichtung'}[it.k],zone:ZK[it.zk||'gef']?.[0]||'Bereich',box:'Infokasten',text:'Text',img:'Hintergrund'}[it.t];
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
+ +(it.t==='obj'&&it.k==='untafel'?(()=>{const vs=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k)),bad=(it.gn&&!/^X?\d{2,3}$/.test(it.gn))||(it.un&&!/^\d{4}$/.test(it.un));return `<span class="grp"><span class="szl">Nr. Gefahr</span><input id="pGn" value="${esc(it.gn||'')}" maxlength="4" autocapitalize="characters" placeholder="33" style="flex:0 0 80px"><span class="szl">UN-Nr.</span><input id="pUn" value="${esc(it.un||'')}" maxlength="4" inputmode="numeric" placeholder="1203" style="flex:0 0 90px"></span><input id="pSt" value="${esc(it.stoff||'')}" placeholder="Stoff (optional)" style="flex:1 1 140px"><span class="grp"><span class="szl">an</span><select id="pUv" style="width:auto;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(x.l||OBJ[x.k][0])}</option>`).join('')}</select></span><span id="pUw" class="szl" style="color:var(--red)"${bad?'':' hidden'}>Format prüfen: Nr. Gefahr 2–3 Ziffern (ggf. mit X), UN-Nr. 4 Ziffern</span>`})():'')
+ +(it.t==='zone'?`<span class="grp"><span class="szl">Art</span><select id="pZk" style="width:auto;min-height:36px">${Object.entries(ZK).map(([k,v])=>`<option value="${k}"${(it.zk||'gef')===k?' selected':''}>${v[0]}</option>`).join('')}</select><span class="szl">Form</span><select id="pZs" style="width:auto;min-height:36px"><option value="circle"${it.sh!=='rect'?' selected':''}>Kreis</option><option value="rect"${it.sh==='rect'?' selected':''}>Rechteck</option></select></span>`:'')
  +(isP(it)?`<span class="grp"><span class="szl">Zustand</span><select id="pK" style="width:auto;min-height:36px">${PKEYS.map(([k,n])=>`<option value="${k}"${k===it.k?' selected':''}>${n}</option>`).join('')}</select><button class="sm${it.ek?' on':''}" data-a="ek">eingeklemmt</button>${(+it.n||1)>1?'<button class="sm" data-a="split">1 abspalten</button>':''}</span>`:'')
  +(isP(it)?(()=>{const vs=targets(s.items);return `<span class="grp"><span class="szl">Ort / Fahrzeug</span><select id="pV" style="width:auto;max-width:220px;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(tgKind(x)+': '+tgName(x))}${x.id===it.v&&it.va?' (auto)':''}</option>`).join('')}<option value="txt"${it.vt?' selected':''}>Freitext …</option></select>${it.vt!==undefined?`<input id="pVt" value="${esc(it.vt||'')}" placeholder="z. B. Wohnung links" style="flex:0 0 170px;min-height:36px">`:''}</span>`})():'')
  +(it.t==='sym'&&SYM[it.k].c==='Personen'?`<span class="grp"><span class="szl">Anzahl</span><button class="sm" data-a="n-" aria-label="Anzahl verringern">−</button><input id="pN" type="number" min="0" max="999" inputmode="numeric" pattern="[0-9]*" value="${it.n||''}" placeholder="–" aria-label="Anzahl"><button class="sm" data-a="n+" aria-label="Anzahl erhöhen">+</button></span><span class="grp"><span class="szl">Status</span><button class="sm${!it.m?' on':''}" data-a="m0">–</button><button class="sm${it.m==='?'?' on':''}" data-a="m?">? vermutet</button><button class="sm${it.m==='!'?' on':''}" data-a="m!">! bestätigt</button></span>`:'')
@@ -406,6 +421,10 @@ function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.in
  +(it.t==='text'||(it.t==='line'&&['arrow','free'].includes(it.k))?Object.keys(PEN).map(k=>`<button class="sm dot" data-a="c-${k}" style="background:${PEN[k]}" aria-label="Farbe"></button>`).join(''):'')
  +(PHOK.includes(it.t)?`<button class="sm" data-a="ph">Fotos${it.ph&&it.ph.length?' ('+it.ph.length+')':''}</button>`:'')
  +'<button class="sm" data-a="dup">Duplizieren</button><button class="sm" data-a="lock">Fixieren</button><button class="sm del" data-a="del">Löschen</button>';
+ for(const [id,k] of [['pGn','gn'],['pUn','un'],['pSt','stoff']]){const E=$(id);if(E){E.onfocus=()=>snap();E.oninput=()=>{it[k]=k==='gn'?E.value.toUpperCase().replace(/[^X0-9]/g,''):k==='un'?E.value.replace(/\D/g,''):E.value;if(k!=='stoff'&&E.value!==it[k])E.value=it[k];const W=$('pUw');if(W)W.hidden=!((it.gn&&!/^X?\d{2,3}$/.test(it.gn))||(it.un&&!/^\d{4}$/.test(it.un)));renderMap();saveSoon()}}}
+ const PUv=$('pUv');if(PUv)PUv.onchange=()=>{snap();const V=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k))[+PUv.value];if(V){if(!V.id)V.id=uid();it.v=V.id}else delete it.v;save();renderMap()};
+ const PZk=$('pZk');if(PZk)PZk.onchange=()=>{snap();const old=ZK[it.zk||'gef'][0];it.zk=zkLast=PZk.value;if(!it.l||it.l===old)it.l=ZK[it.zk][0];save();render()};
+ const PZs=$('pZs');if(PZs)PZs.onchange=()=>{snap();shLast=PZs.value;if(PZs.value==='rect'&&it.sh!=='rect'){it.sh='rect';it.w=it.h=r1(it.r*2)}else if(PZs.value==='circle'&&it.sh==='rect'){it.sh='circle';it.r=r1(Math.max(it.w,it.h)/2)}save();render()};
  const PK=$('pK');if(PK)PK.onchange=()=>{if(PK.value===it.k)return;snap();(it.hist=it.hist||[]).push({t:Date.now(),from:it.k,to:PK.value});it.k=PK.value;if(it.k==='p_ger')delete it.ek;save();render();toast(pkName(it.k)+' – '+hm(new Date()))};
  const PV=$('pV');if(PV)PV.onchange=()=>{snap();delete it.va;if(PV.value==='txt'){delete it.v;it.vt=it.vt||'';save();renderProps();$('pVt')?.focus();return}delete it.vt;const V=targets(s.items)[+PV.value];if(V){if(!V.id)V.id=uid();it.v=V.id}else delete it.v;save();renderMap();renderProps()};
  const PVt=$('pVt');if(PVt){PVt.oninput=()=>{it.vt=PVt.value;renderMap();saveSoon()}}
@@ -420,14 +439,15 @@ function doUndo(){const u=undo.pop();if(!u)return toast('Nichts rückgängig zu 
 function setTool(t){if(t==='pal'){openPal();return}tool=t;if(t!=='place')placing=null;sel=-1;render()}
 function renderTools(){$('tools').innerHTML=TOOLS.map(([k,n])=>`<button class="sm${tool===k||(k==='pal'&&tool==='place')?' on':''}" data-t="${k}">${n}</button>`).join('');
  $('quickSym').innerHTML=recent.map(k=>`<button class="sm ico${tool==='place'&&placing===k?' on':''}" data-q="${k}" title="${esc(SYM[k]?.n||OBJ[k]?.[0])}"><img alt="${esc(SYM[k]?.n||OBJ[k]?.[0])}" src="${thumb(k)}"></button>`).join('')+'<span class="sep"></span>'+Object.keys(PEN).map(k=>`<button class="sm dot${pen===k?' on':''}" data-pen="${k}" style="background:${PEN[k]}" aria-label="Stiftfarbe"></button>`).join('')}
-const thumb=k=>SYM[k]?SYM[k].uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${k==='lok'||k==='wagen'?'-560 -280 1120 560':k==='lkw'||k==='bus'?'-250 -125 500 250':'-100 -70 200 140'}">${OBJ[k][1]}</svg>`);
+const thumb=k=>SYM[k]?SYM[k].uri:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${k==='lok'||k==='wagen'||k==='binnen'||k==='hotel'?'-560 -280 1120 560':k==='untafel'||k.startsWith('abl_')?'-100 -100 200 200':k==='lkw'||k==='bus'?'-250 -125 500 250':'-100 -70 200 140'}">${OBJ[k][1]}</svg>`);
 $('tools').onclick=e=>{const b=e.target.closest('[data-t]');if(b)setTool(b.dataset.t)};
 $('quickSym').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.q)usePlace(b.dataset.q);if(b.dataset.pen){pen=b.dataset.pen;renderTools()}};
 function usePlace(k){tool='place';placing=k;sel=-1;recent=[k,...recent.filter(x=>x!==k)].slice(0,10);try{localStorage.setItem(KEY+'.recent',JSON.stringify(recent))}catch(e){}render()}
 // Palette
 function openPal(){const q=$('palQ');q.value='';palRender();$('dPal').showModal()}
 function palRender(){const q=$('palQ').value.toLowerCase();
- const grp=[['Orientierung',['nord']],...SYMDEF.map(([c,l])=>[c,l.map(x=>x[0])]),['Objekte (eigene Darstellung)',OBJDEF.map(x=>x[0]).filter(k=>k!=='nord')]];
+ const EXTRA={'Gefahrgut':['untafel'],'Schiffe (eigene Darstellung)':SHIPS,'Ablagen TH (eigene Darstellung)':['abl_rd','abl_ger','abl_schrott']},ex=new Set(['nord',...Object.values(EXTRA).flat()]);
+ const grp=[['Orientierung',['nord']],...SYMDEF.map(([c,l])=>[c,l.map(x=>x[0])]),...Object.entries(EXTRA),['Objekte (eigene Darstellung)',OBJDEF.map(x=>x[0]).filter(k=>!ex.has(k))]];
  $('palL').innerHTML=grp.map(([c,ks])=>{const f=ks.filter(k=>(SYM[k]?.n||OBJ[k][0]).toLowerCase().includes(q));return f.length?`<h3>${esc(c)}</h3><div class="pal">${f.map(k=>`<button data-k="${k}"><img alt="" src="${thumb(k)}"><span>${esc(SYM[k]?.n||OBJ[k][0])}</span></button>`).join('')}</div>`:''}).join('')||'<p class="empty">Nichts gefunden.</p>'}
 $('palQ').oninput=palRender;
 $('palL').onclick=e=>{const b=e.target.closest('[data-k]');if(!b)return;$('dPal').close();usePlace(b.dataset.k)};
@@ -460,14 +480,15 @@ map.onpointerdown=e=>{if(!need())return;
  snap();let n=null;
  switch(tool){case 'wall':n={t:'wall',x1:q.x,y1:q.y,x2:q.x,y2:q.y,w:10};break;
   case 'room':n={t:'room',x:q.x,y:q.y,w:0,h:0,l:'',sw:6};break;
-  case 'zone':n={t:'zone',x:r1(p.x),y:r1(p.y),r:0,l:'Gefahrenbereich'};break;
+  case 'zone':n={t:'zone',x:r1(p.x),y:r1(p.y),r:0,w:0,h:0,l:ZK[zkLast][0],zk:zkLast,sh:shLast};break;
   case 'arrow':case 'hose':case 'barrier':case 'rail':case 'road':case 'free':n={t:'line',k:tool,pts:[[r1(p.x),r1(p.y)]],c:pen,l:''};break;
   case 'lead':n={t:'line',k:'leader',pts:[[r1(p.x),r1(p.y)],[r1(p.x),r1(p.y)]],c:'k',l:''};break;
   case 'door':n={t:'door',x:q.x,y:q.y,r:0,s:1,f:1};break;case 'win':n={t:'win',x:q.x,y:q.y,r:0,s:1};break;
   case 'stair':n={t:'stair',x:q.x,y:q.y,r:0,s:1};break;case 'text':n={t:'text',x:r1(p.x),y:r1(p.y),r:0,s:1,l:'Text',c:pen};break;
-  case 'place':if(VEH.includes(placing)){const c=items().filter(x=>x.t==='obj'&&VEH.includes(x.k)).length;n={t:'obj',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:'Fzg '+String.fromCharCode(65+c%26)+(c>=26?Math.floor(c/26)+1:''),id:uid()};break}
-  n=SYM[placing]?{t:'sym',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:''}:{t:'obj',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:placing==='hyd'?'UH':''};break}
- if(!n){undo.pop();return}if(n.t==='door'||n.t==='win')snapOpening(n,p);items().push(n);sel=items().length-1;act={type:'create',p0:q,src:n.k==='leader'?personAt(p):null};renderMap()};
+  case 'place':if(VEH.includes(placing)){n={t:'obj',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:vehLabel(placing,items()),id:uid()};break}
+  if(placing==='untafel'){n={t:'obj',k:'untafel',x:r1(p.x),y:r1(p.y),s:1,r:0,l:'',gn:'',un:''};break}
+  n=SYM[placing]?{t:'sym',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:''}:{t:'obj',k:placing,x:r1(p.x),y:r1(p.y),s:1,r:0,l:placing==='hyd'?'UH':placing==='abl_rd'?'Ablage RD':''};break}
+ if(!n){undo.pop();return}if(n.t==='door'||n.t==='win')snapOpening(n,p);items().push(n);sel=items().length-1;act={type:'create',p0:q,src:n.k==='leader'?(personAt(p)||unAt(p)):null};renderMap()};
 map.onpointermove=e=>{if(!ptrs.has(e.pointerId))return;e.preventDefault();ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(pinch&&ptrs.size===2){const[a,b]=[...ptrs.values()],f=pinch.d/Math.max(dist(a,b),1),w=Math.min(Math.max(pinch.vb.w*f,150),20000),h=w*pinch.vb.h/pinch.vb.w;
   vb={x:pinch.m.x-(pinch.m.x-pinch.vb.x)*w/pinch.vb.w,y:pinch.m.y-(pinch.m.y-pinch.vb.y)*h/pinch.vb.h,w,h};setVB();return}
@@ -475,11 +496,11 @@ map.onpointermove=e=>{if(!ptrs.has(e.pointerId))return;e.preventDefault();ptrs.s
  if(act.type==='pan'){const r=map.getBoundingClientRect(),k=Math.max(vb.w/r.width,vb.h/r.height);vb.x=act.vb.x-(e.clientX-act.c.x)*k;vb.y=act.vb.y-(e.clientY-act.c.y)*k;setVB();return}
  if(act.type==='move'){let dx=p.x-act.p0.x,dy=p.y-act.p0.y;if(Math.hypot(dx,dy)<4*pxW()&&!act.mv)return;act.mv=1;
   if(it.t==='door'||it.t==='win'){const c=opCenter(act.o);it.r=act.o.r;if(snapOpening(it,{x:c.x+dx,y:c.y+dy})){upd(sel);return}it.r=act.o.r}if(['wall','room','door','win','stair'].includes(it.t)){dx=snapV(dx);dy=snapV(dy)}shift(it,act.o,r1(dx),r1(dy));upd(sel);return}
- if(act.type==='h'){const h=act.h;if(h==='p1'){it.x1=q.x;it.y1=q.y}if(h==='p2'){it.x2=q.x;it.y2=q.y}if(h==='br'){it.w=Math.max(20,(it.t==='img'?r1(p.x):q.x)-it.x);it.h=it.t==='img'&&it.ar?r1(it.w*it.ar):Math.max(20,q.y-it.y)}if(h==='sc'){it.s=Math.max(.2,Math.min(8,Math.round(act.s0*Math.hypot(p.x-it.x,p.y-it.y)/act.d0*100)/100));syncS()}if(h==='r')it.r=Math.max(10,r1(dist(p,it)));if(h==='l0')it.pts[0]=[r1(p.x),r1(p.y)];if(h==='l1')it.pts[1]=[r1(p.x),r1(p.y)];upd(sel);return}
+ if(act.type==='h'){const h=act.h;if(h==='p1'){it.x1=q.x;it.y1=q.y}if(h==='p2'){it.x2=q.x;it.y2=q.y}if(h==='br'){it.w=Math.max(20,(it.t==='img'?r1(p.x):q.x)-it.x);it.h=it.t==='img'&&it.ar?r1(it.w*it.ar):Math.max(20,q.y-it.y)}if(h==='sc'){it.s=Math.max(.2,Math.min(8,Math.round(act.s0*Math.hypot(p.x-it.x,p.y-it.y)/act.d0*100)/100));syncS()}if(h==='r')it.r=Math.max(10,r1(dist(p,it)));if(h==='zr'){it.w=Math.max(20,r1(Math.abs(p.x-it.x)*2));it.h=Math.max(20,r1(Math.abs(p.y-it.y)*2))}if(h==='l0')it.pts[0]=[r1(p.x),r1(p.y)];if(h==='l1')it.pts[1]=[r1(p.x),r1(p.y)];upd(sel);return}
  if(act.type==='create'){switch(it.t){
   case 'wall':{let x=q.x,y=q.y;const dx=Math.abs(x-it.x1),dy=Math.abs(y-it.y1);if(dy<dx*.2)y=it.y1;else if(dx<dy*.2)x=it.x1;it.x2=x;it.y2=y;break}
   case 'room':it.x=Math.min(act.p0.x,q.x);it.y=Math.min(act.p0.y,q.y);it.w=Math.abs(q.x-act.p0.x);it.h=Math.abs(q.y-act.p0.y);break;
-  case 'zone':it.r=r1(dist(p,it));break;
+  case 'zone':it.r=r1(dist(p,it));if(it.sh==='rect'){it.w=r1(Math.abs(p.x-it.x)*2);it.h=r1(Math.abs(p.y-it.y)*2)}break;
   case 'line':{if(it.k==='leader'){it.pts[1]=[r1(p.x),r1(p.y)];break}let evs=[];try{evs=e.getCoalescedEvents?e.getCoalescedEvents():[]}catch(x){}if(!evs.length)evs=[e];const m=.8*pxW();
    for(const v of evs){const w=toW(v.clientX,v.clientY),l=it.pts[it.pts.length-1];if(Math.hypot(w.x-l[0],w.y-l[1])>m)it.pts.push([r1(w.x),r1(w.y)])}break}
   default:if(it.t==='sym'||it.t==='obj'||it.t==='text'){it.x=r1(p.x);it.y=r1(p.y)}else if((it.t==='door'||it.t==='win')&&snapOpening(it,p)){}else{it.x=q.x;it.y=q.y}}upd(sel)}};
@@ -488,7 +509,7 @@ map.onpointerup=map.onpointercancel=e=>{if(e.pointerId===penId)penId=null;if(!pt
  if(act.type==='create'){let bad=false;
   if(it.t==='wall')bad=Math.hypot(it.x2-it.x1,it.y2-it.y1)<20;
   if(it.t==='room')bad=it.w<20||it.h<20;
-  if(it.t==='zone'&&it.r<20)it.r=120;
+  if(it.t==='zone'&&it.r<20){it.r=120;if(it.sh==='rect'){it.w=240;it.h=160}}if(it.t==='zone'&&it.sh==='rect'&&(it.w<20||it.h<20)){it.w=Math.max(it.w,240);it.h=Math.max(it.h,160)}
   if(it.t==='line'&&it.k==='leader'){const[a,b2]=it.pts,P=act.src,T=P&&targetAt({x:b2[0],y:b2[1]});
    if(P&&T){items().pop();if(!T.id)T.id=uid();P.v=T.id;delete P.va;delete P.vt;sel=items().indexOf(P);save();act=null;render();toast('Zugeordnet: '+tgName(T));return}
    bad=Math.hypot(b2[0]-a[0],b2[1]-a[1])<20*pxW()}
@@ -521,7 +542,7 @@ $('props').onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a,s=sh(),it
  if(a==='n+')it.n=Math.min(999,(+it.n||0)+1);if(a==='n-')it.n=Math.max(0,(+it.n||0)-1);
  if(a==='m0')delete it.m;if(a==='m?')it.m='?';if(a==='m!')it.m='!';
  if(a==='ph'){undo.pop();phOpen(it);return}
- if(a==='dup'){const c=JSON.parse(JSON.stringify(it));if(c.id)c.id=uid();if(c.t==='obj'&&VEH.includes(c.k)){const n=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k)).length;c.l='Fzg '+String.fromCharCode(65+n%26)}shift(c,JSON.parse(JSON.stringify(it)),40,40);s.items.push(c);sel=s.items.length-1}
+ if(a==='dup'){const c=JSON.parse(JSON.stringify(it));if(c.id)c.id=uid();if(c.t==='obj'&&VEH.includes(c.k))c.l=vehLabel(c.k,s.items);shift(c,JSON.parse(JSON.stringify(it)),40,40);s.items.push(c);sel=s.items.length-1}
  if(a==='lock'){it.lock=1;sel=-1;toast('Fixiert. Lösen über „Blatt …“')}
  if(a==='del'){s.items.splice(sel,1);sel=-1}
  save();render()};
@@ -576,7 +597,7 @@ const TPL={
   return it},
  strasse:()=>[LN('edge',[[0,360],[1600,360]]),LN('edge',[[0,640],[1600,640]]),LN('center',[[0,500],[1600,500]]),TX(30,330,'Straße / km',.9)],
  bahn:()=>[LN('rail',[[0,420],[2600,420]]),LN('rail',[[0,580],[2600,580]]),TX(30,350,'Gleis 1',.9),TX(30,680,'Gleis 2',.9),
-  {t:'obj',k:'lok',x:480,y:420,s:1,r:0,l:''},{t:'obj',k:'wagen',x:1400,y:420,s:1,r:0,l:''},
+  {t:'obj',k:'lok',x:480,y:420,s:1,r:0,l:'Lok',id:uid()},{t:'obj',k:'wagen',x:1400,y:420,s:1,r:0,l:'Wagen 1',id:uid()},
   {t:'sym',k:'g_el',x:1300,y:220,s:1.2,r:0,l:'Oberleitung 15 kV'},TX(30,140,'Strecke ____  /  km ____',.9)],
  rhein:()=>[{t:'line',k:'water',pts:[[0,300],[2400,300],[2400,900],[0,900]],c:'b',l:'',lock:1},LN('bank',[[0,300],[2400,300]]),LN('bank',[[0,900],[2400,900]]),
   ...[400,900,1400,1900].map(x=>LN('bank',[[x,900],[x-70,780]])),{t:'line',k:'fair',pts:[[0,560],[2400,560]],c:'b',l:'Fahrrinne'},
@@ -681,10 +702,11 @@ function rhBuild(){const c0=rhIn();if(!c0.ok){toast('Rhein-km des Ereignisorts f
  return it}
 
 // ===== Zeigelinie: Ziel unter einem Punkt =====
-const VDIM={pkw:[90,38],lkw:[210,58],bus:[240,50],krad:[46,26],lok:[380,58],wagen:[534,58]};
+const VDIM={pkw:[90,38],lkw:[210,58],bus:[240,50],krad:[46,26],lok:[380,58],wagen:[534,58],binnen:[450,55],hotel:[500,70],boot:[90,32]};
+function unAt(p){const L=items();for(let i=L.length-1;i>=0;i--){const x=L[i];if(x.t==='obj'&&x.k==='untafel'&&Math.abs(p.x-x.x)<=85*(x.s||1)&&Math.abs(p.y-x.y)<=65*(x.s||1))return x}return null}
 function personAt(p){const L=items();for(let i=L.length-1;i>=0;i--){const x=L[i];if(isP(x)){const h=55*(x.s||1);if(Math.abs(p.x-x.x)<=h&&Math.abs(p.y-x.y)<=h)return x}}return null}
 function targetAt(p){const c=[];for(const x of items()){
-  if(x.t==='obj'&&VDIM[x.k]){const a=-(x.r||0)*Math.PI/180,dx=p.x-x.x,dy=p.y-x.y,s=x.s||1,lx=(dx*Math.cos(a)-dy*Math.sin(a))/s,ly=(dx*Math.sin(a)+dy*Math.cos(a))/s,[hw,hh]=VDIM[x.k];
+  if(x.t==='obj'&&VDIM[x.k]&&VEH.includes(x.k)){const a=-(x.r||0)*Math.PI/180,dx=p.x-x.x,dy=p.y-x.y,s=x.s||1,lx=(dx*Math.cos(a)-dy*Math.sin(a))/s,ly=(dx*Math.sin(a)+dy*Math.cos(a))/s,[hw,hh]=VDIM[x.k];
    if(Math.abs(lx)<=hw+10&&Math.abs(ly)<=hh+10)c.push([x,4*hw*hh*s*s])}
   else if((x.t==='room'||x.t==='zone')&&x.l&&inside(x,p))c.push([x,x.t==='room'?x.w*x.h:Math.PI*x.r*x.r])}
  c.sort((a,b)=>a[1]-b[1]);return c.length?c[0][0]:null}
@@ -730,7 +752,7 @@ const PDB={_db:null,open(){return this._db||(this._db=new Promise((ok,no)=>{cons
  put(id,b){return this.tx('readwrite',s=>s.put(b,id))},get(id){return this.tx('readonly',s=>s.get(id))},del(id){return this.tx('readwrite',s=>s.delete(id))},keys(){return this.tx('readonly',s=>s.getAllKeys())}};
 const PHOK=['obj','room','zone','sym','box','text'];
 function phBadge(it){const n=it.ph&&it.ph.length;if(!n)return'';let bx=it.x,by=it.y-30;
- if(it.t==='sym'){const z=110*(it.s||1);bx=it.x+z*.45;by=it.y-z*.45}else if(it.t==='obj'&&VDIM[it.k]){bx=it.x+VDIM[it.k][0]*(it.s||1);by=it.y-VDIM[it.k][1]*(it.s||1)}else if(it.t==='room'){bx=it.x+it.w-18;by=it.y+18}else if(it.t==='zone'){bx=it.x+it.r*.7;by=it.y-it.r*.7}
+ if(it.t==='sym'){const z=110*(it.s||1);bx=it.x+z*.45;by=it.y-z*.45}else if(it.t==='obj'&&VDIM[it.k]){bx=it.x+VDIM[it.k][0]*(it.s||1);by=it.y-VDIM[it.k][1]*(it.s||1)}else if(it.t==='room'){bx=it.x+it.w-18;by=it.y+18}else if(it.t==='zone'){if(it.sh==='rect'){bx=it.x+it.w/2-18;by=it.y-it.h/2+18}else{bx=it.x+it.r*.7;by=it.y-it.r*.7}}
  return `<g transform="translate(${r1(bx)},${r1(by)})" pointer-events="none"><circle r="17" fill="#1d5fbf" stroke="#fff" stroke-width="3"/><path d="M-9,-4h4l2,-3h6l2,3h4v11h-18z" fill="#fff"/><circle r="3.5" cy="1.5" fill="#1d5fbf"/><text x="14" y="-12" font-size="14" font-family="Arial" font-weight="bold" fill="#1d5fbf" stroke="#fff" stroke-width="3" paint-order="stroke">${n}</text></g>`}
 async function imgToJpeg(file,max=1600,q=.75){const u=URL.createObjectURL(file);try{const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=u});const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return await new Promise(ok=>c.toBlob(ok,'image/jpeg',q))}finally{URL.revokeObjectURL(u)}}
 let phIt=null,phUrls=[];
@@ -835,6 +857,7 @@ $('docNew').onclick=()=>{$('dDocs').close();openDoc(newDoc().id);$('docName').se
 $('docExp').onclick=async()=>{const photos={};for(const d of Object.values(db.docs))for(const m of d.maps||[])for(const x of m.items)for(const p of x.ph||[]){const b=await PDB.get(p.id).catch(()=>null);if(b)photos[p.id]=await blobToDataURL(b)}
  dl('Lagekarte_Sicherung_'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({...db,photos}),'application/json')};
 $('docImp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const d=JSON.parse(await f.text());if(!d.docs)throw 0;let n=0;for(const k in d.docs){if(!db.docs[k]||confirm('Lage „'+(d.docs[k].name||k)+'“ existiert bereits. Überschreiben?')){db.docs[k]=d.docs[k];n++}}for(const [id,u] of Object.entries(d.photos||{})){try{await PDB.put(id,await (await fetch(u)).blob())}catch(x){}}save();renderDocs();toast(n+' Lagen importiert')}catch(x){toast('Datei ist keine gültige Sicherung')}};
+function ggList(m){const U=m.items.filter(x=>x.t==='obj'&&x.k==='untafel');if(!U.length)return'';return `<h2>Gefahrgut (Warntafeln)</h2><table><tr><th>Fahrzeug / Schiff</th><th>Nr. zur Kennzeichnung der Gefahr</th><th>UN-Nummer</th><th>Stoff</th></tr>${U.map(u=>{const V=u.v?m.items.find(x=>x.id===u.v):null;return `<tr><td>${esc(V?tgName(V):'–')}</td><td>${esc(u.gn||'')}</td><td>${esc(u.un||'')}</td><td>${esc(u.stoff||'')}</td></tr>`}).join('')}</table>`}
 function vehList(m){const P=m.items.filter(isP);if(!P.length||!P.some(p=>p.v||p.vt))return'';const T=targets(m.items);
  const pd=p=>esc(SYM[p.k].n+(p.n?' ×'+p.n:'')+(p.m?' '+p.m:'')+(p.l?' – '+p.l:''));const used=new Set();
  const grp=new Map();for(const x of T){const k=tgKind(x)+'|'+tgName(x);if(!grp.has(k))grp.set(k,[]);grp.get(k).push(x)}
@@ -843,7 +866,7 @@ function vehList(m){const P=m.items.filter(isP);if(!P.length||!P.some(p=>p.v||p.
  const rest=P.filter(p=>!used.has(p));
  return `<h2>Zuordnung Personen</h2><table><tr><th>Ort / Fahrzeug</th><th>Art</th><th>Personen</th></tr>${rows}${Object.entries(ft).map(([k,ps])=>`<tr><td>${esc(k)}</td><td>Freitext</td><td>${ps.map(pd).join('<br>')}</td></tr>`).join('')}${rest.length?`<tr><td>ohne Zuordnung</td><td></td><td>${rest.map(pd).join('<br>')}</td></tr>`:''}</table>`}
 $('docPrint').onclick=async()=>{const o=op();if(!o)return;const l=(o.maps||[]).filter(m=>m.items.length);if(!l.length)return toast('Keine Inhalte zum Drucken');
- $('print').innerHTML=l.map(m=>`<div class="sheet"><h1>${esc(o.name)} – ${esc(m.name)}</h1><p style="margin:0 0 6pt">Stand ${dt(new Date())} · nicht maßstäblich</p>${sheetSVG(m)}${vehList(m)}</div>`).join('');
+ $('print').innerHTML=l.map(m=>`<div class="sheet"><h1>${esc(o.name)} – ${esc(m.name)}</h1><p style="margin:0 0 6pt">Stand ${dt(new Date())} · nicht maßstäblich</p>${sheetSVG(m)}${ggList(m)}${vehList(m)}</div>`).join('');
  $('print').insertAdjacentHTML('beforeend',await phPrintHtml(o)+persPrintHtml(o));setTimeout(()=>window.print(),50)};
 if(!op())newDoc();openDoc(db.cur);setTimeout(phGc,3000);
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
