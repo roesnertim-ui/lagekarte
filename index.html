@@ -222,7 +222,8 @@ dialog{max-height:88vh;overflow:auto;overscroll-behavior:contain}
 <li><b>Farbe</b> gilt für Pfeil, Freihand und Text.</li></ul></details>
 <details><summary>Zeichen und Personen</summary><ul>
 <li><b>Alle Zeichen</b> öffnet die Auswahl mit Suche. Zuletzt verwendete Zeichen liegen in der Leiste.</li>
-<li>Personenzeichen: <b>Zustand</b> umstellen (z. B. verletzt → gerettet, mit Uhrzeit im Verlauf), <b>eingeklemmt</b>, <b>Anzahl</b>, Status <b>?</b> vermutet / <b>!</b> bestätigt, <b>1 abspalten</b>, <b>Ort / Fahrzeug</b>.</li>
+<li>Eingeklemmte Personen: Zeichen <b>„Verschüttete / eingeklemmte Person“</b>.</li>
+<li>Personenzeichen: <b>Zustand</b> umstellen (z. B. verletzt → gerettet, mit Uhrzeit im Verlauf), <b>Anzahl</b>, Status <b>?</b> vermutet / <b>!</b> bestätigt, <b>1 abspalten</b>, <b>Ort / Fahrzeug</b>.</li>
 <li>Personen in beschrifteten Räumen oder Geschossen werden automatisch zugeordnet.</li>
 <li>Fahrzeuge und Schiffe erhalten automatisch eine Kennung (Fzg A, Schiff A …).</li>
 <li><b>UN-Tafel:</b> Nummer zur Kennzeichnung der Gefahr, UN-Nummer und Stoff eintragen, per Auswahl oder Zeigelinie einem Fahrzeug zuordnen.</li></ul></details>
@@ -304,7 +305,7 @@ const SYMDEF=[
   ['p','Person',per('')],
   ['p_verm','Vermisste Person',per('<path d="M57,121 l64,-64 M135,199 l64,-64" stroke="#000" stroke-width="5"/>')],
   ['p_verl','Verletzte Person',per(ln(128,64,128,192))],
-  ['p_versch','Verschüttete Person',per(ln(64,64,192,64,7))],
+  ['p_versch','Verschüttete / eingeklemmte Person',per(ln(64,64,192,64,7))],
   ['p_tot','Tote Person',per(ln(128,64,128,192)+ln(104,88,152,88))],
   ['p_ger','Gerettete Person',per(ln(64,192,192,192,7))],
   ['p_zutr','Zu transportierende Person',per(ln(64,192,182,192)+'<path d="M182,182 L192,192 L182,202 Z"/>')],
@@ -371,7 +372,7 @@ const OBJ={
 const SHIPS=['binnen','hotel','boot'],LANDV=['pkw','lkw','bus','krad','lok','wagen'],VEH=[...LANDV,...SHIPS];
 function vehLabel(k,list){const sh=SHIPS.includes(k),c=list.filter(x=>x.t==='obj'&&(sh?SHIPS:LANDV).includes(x.k)).length;return (sh?'Schiff ':'Fzg ')+String.fromCharCode(65+c%26)+(c>=26?Math.floor(c/26)+1:'')}
 const isP=x=>x&&x.t==='sym'&&SYM[x.k]?.c==='Personen';
-const PKEYS=[['p','Person'],['p_verm','vermisst'],['p_versch','verschüttet'],['p_verl','verletzt'],['p_tot','tot'],['p_ger','gerettet'],['p_zutr','zu transportieren'],['p_tr','transportiert']];
+const PKEYS=[['p','Person'],['p_verm','vermisst'],['p_versch','verschüttet / eingeklemmt'],['p_verl','verletzt'],['p_tot','tot'],['p_ger','gerettet'],['p_zutr','zu transportieren'],['p_tr','transportiert']];
 const pkName=k=>(PKEYS.find(x=>x[0]===k)||[k,SYM[k]?.n||k])[1];
 const histTxt=it=>(it.hist||[]).map(h=>`${hm(new Date(h.t))} ${pkName(h.from)} → ${pkName(h.to)}`).join(', ');
 function tgName(x){return x.t==='obj'?(x.l||OBJ[x.k][0]):x.l||''}
@@ -437,7 +438,7 @@ function rItem(it,i,L){let s='';const tf=`translate(${r1(it.x)},${r1(it.y)}) rot
  case 'text':s=`<g transform="${tf}">${halo(0,0,it.l||' ',26,PEN[it.c]||'#111',it.a||'start')}</g>`;break;
  case 'sym':{const S=SYM[it.k];if(!S)break;const z=110*(it.s||1);const V=S.c==='Personen'&&it.v?(L||items()).find(x=>x.id===it.v):null,VC=V&&!inside(V,it)?tgCenter(V):null;
   if(VC)s=`<line x1="${r1(it.x)}" y1="${r1(it.y)}" x2="${r1(VC.x)}" y2="${r1(VC.y)}" stroke="#444" stroke-width="2.5" stroke-dasharray="8 6" pointer-events="none"/><circle cx="${r1(VC.x)}" cy="${r1(VC.y)}" r="5" fill="#444" pointer-events="none"/>`;
-  s+=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,[it.ek?'eingeklemmt':'',it.l,V&&!V.ghost&&!V.floor?'→ '+tgName(V):it.vt?'→ '+it.vt:''].filter(Boolean).join(' '),22);break}
+  s+=`<g transform="translate(${r1(it.x)},${r1(it.y)}) rotate(${it.r||0})"><rect x="${-z/2}" y="${-z/2}" width="${z}" height="${z}" fill="#fff" fill-opacity=".01"/><image href="${S.uri}" x="${-z/2}" y="${-z/2}" width="${z}" height="${z}"/>${S.c==='Personen'&&(it.n||it.m)?`<text x="${r1(-z*.17)}" y="${r1(z*.38)}" text-anchor="end" font-size="${r1(z*.21)}" font-weight="bold" font-family="Arial,Helvetica,sans-serif" fill="#000" stroke="#fff" stroke-width="${r1(z*.035)}" paint-order="stroke" stroke-linejoin="round">${it.m==='?'||it.m==='!'?it.m:''}${it.n?+it.n:''}</text>`:''}</g>`+halo(it.x,it.y+z*.4+22,[it.l,V&&!V.ghost&&!V.floor?'→ '+tgName(V):it.vt?'→ '+it.vt:''].filter(Boolean).join(' '),22);break}
  case 'obj':{const O=OBJ[it.k];if(!O)break;const UV=it.k==='untafel'&&it.v?(L||items()).find(x=>x.id===it.v):null;
   if(UV)s=`<line x1="${r1(it.x)}" y1="${r1(it.y)}" x2="${r1(UV.x)}" y2="${r1(UV.y)}" stroke="#ff8c00" stroke-width="3" stroke-dasharray="8 6" pointer-events="none"/><circle cx="${r1(UV.x)}" cy="${r1(UV.y)}" r="6" fill="#ff8c00" pointer-events="none"/>`;
   const oy={hyd:44,pkw:60,krad:60,boot:56,untafel:84,binnen:84,hotel:98,abl_rd:104,abl_ger:104,abl_schrott:104}[it.k]||72;
@@ -469,7 +470,7 @@ function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.in
  P.innerHTML=`<b class="pn">${esc(nm||'')}</b>`+(LBL[it.t]===0?'':`<input id="pL" placeholder="${it.t==='line'&&it.k==='hose'?'z. B. B / 2 C':'Beschriftung'}" value="${esc(it.l||'')}">`)
  +(it.t==='obj'&&it.k==='untafel'?(()=>{const vs=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k)),bad=(it.gn&&!/^X?\d{2,3}$/.test(it.gn))||(it.un&&!/^\d{4}$/.test(it.un));return `<span class="grp"><span class="szl">Nr. Gefahr</span><input id="pGn" value="${esc(it.gn||'')}" maxlength="4" autocapitalize="characters" placeholder="33" style="flex:0 0 80px"><span class="szl">UN-Nr.</span><input id="pUn" value="${esc(it.un||'')}" maxlength="4" inputmode="numeric" placeholder="1203" style="flex:0 0 90px"></span><input id="pSt" value="${esc(it.stoff||'')}" placeholder="Stoff (optional)" style="flex:1 1 140px"><span class="grp"><span class="szl">an</span><select id="pUv" style="width:auto;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(x.l||OBJ[x.k][0])}</option>`).join('')}</select></span><span id="pUw" class="szl" style="color:var(--red)"${bad?'':' hidden'}>Format prüfen: Nr. Gefahr 2–3 Ziffern (ggf. mit X), UN-Nr. 4 Ziffern</span>`})():'')
  +(it.t==='zone'?`<span class="grp"><span class="szl">Art</span><select id="pZk" style="width:auto;min-height:36px">${Object.entries(ZK).map(([k,v])=>`<option value="${k}"${(it.zk||'gef')===k?' selected':''}>${v[0]}</option>`).join('')}</select><span class="szl">Form</span><select id="pZs" style="width:auto;min-height:36px"><option value="circle"${it.sh!=='rect'?' selected':''}>Kreis</option><option value="rect"${it.sh==='rect'?' selected':''}>Rechteck</option></select></span>`:'')
- +(isP(it)?`<span class="grp"><span class="szl">Zustand</span><select id="pK" style="width:auto;min-height:36px">${PKEYS.map(([k,n])=>`<option value="${k}"${k===it.k?' selected':''}>${n}</option>`).join('')}</select><button class="sm${it.ek?' on':''}" data-a="ek">eingeklemmt</button>${(+it.n||1)>1?'<button class="sm" data-a="split">1 abspalten</button>':''}</span>`:'')
+ +(isP(it)?`<span class="grp"><span class="szl">Zustand</span><select id="pK" style="width:auto;min-height:36px">${PKEYS.map(([k,n])=>`<option value="${k}"${k===it.k?' selected':''}>${n}</option>`).join('')}</select>${(+it.n||1)>1?'<button class="sm" data-a="split">1 abspalten</button>':''}</span>`:'')
  +(isP(it)?(()=>{const vs=targets(s.items);return `<span class="grp"><span class="szl">Ort / Fahrzeug</span><select id="pV" style="width:auto;max-width:220px;min-height:36px"><option value="">–</option>${vs.map((x,j)=>`<option value="${j}"${x.id&&x.id===it.v?' selected':''}>${esc(tgKind(x)+': '+tgName(x))}${x.id===it.v&&it.va?' (auto)':''}</option>`).join('')}<option value="txt"${it.vt?' selected':''}>Freitext …</option></select>${it.vt!==undefined?`<input id="pVt" value="${esc(it.vt||'')}" placeholder="z. B. Wohnung links" style="flex:0 0 170px;min-height:36px">`:''}</span>`})():'')
  +(it.t==='sym'&&SYM[it.k].c==='Personen'?`<span class="grp"><span class="szl">Anzahl</span><button class="sm" data-a="n-" aria-label="Anzahl verringern">−</button><input id="pN" type="number" min="0" max="999" inputmode="numeric" pattern="[0-9]*" value="${it.n||''}" placeholder="–" aria-label="Anzahl"><button class="sm" data-a="n+" aria-label="Anzahl erhöhen">+</button></span><span class="grp"><span class="szl">Status</span><button class="sm${!it.m?' on':''}" data-a="m0">–</button><button class="sm${it.m==='?'?' on':''}" data-a="m?">? vermutet</button><button class="sm${it.m==='!'?' on':''}" data-a="m!">! bestätigt</button></span>`:'')
  +(SCAL.includes(it.t)?`<span class="szl">Größe</span><button class="sm" data-a="s-" aria-label="Kleiner">−</button><input id="pS" type="range" min="20" max="600" step="5" value="${Math.round((it.s||1)*100)}" aria-label="Größe"><span id="pSv" class="szl num">${Math.round((it.s||1)*100)} %</span><button class="sm" data-a="s+" aria-label="Größer">+</button>`:'')
@@ -483,7 +484,7 @@ function renderProps(){const s=sh(),it=s&&s.items[sel],P=$('props');if(!it){P.in
  const PUv=$('pUv');if(PUv)PUv.onchange=()=>{snap();const V=s.items.filter(x=>x.t==='obj'&&VEH.includes(x.k))[+PUv.value];if(V){if(!V.id)V.id=uid();it.v=V.id}else delete it.v;save();renderMap()};
  const PZk=$('pZk');if(PZk)PZk.onchange=()=>{snap();const old=ZK[it.zk||'gef'][0];it.zk=zkLast=PZk.value;if(!it.l||it.l===old)it.l=ZK[it.zk][0];save();render()};
  const PZs=$('pZs');if(PZs)PZs.onchange=()=>{snap();shLast=PZs.value;if(PZs.value==='rect'&&it.sh!=='rect'){it.sh='rect';it.w=it.h=r1(it.r*2)}else if(PZs.value==='circle'&&it.sh==='rect'){it.sh='circle';it.r=r1(Math.max(it.w,it.h)/2)}save();render()};
- const PK=$('pK');if(PK)PK.onchange=()=>{if(PK.value===it.k)return;snap();(it.hist=it.hist||[]).push({t:Date.now(),from:it.k,to:PK.value});it.k=PK.value;if(it.k==='p_ger')delete it.ek;save();render();toast(pkName(it.k)+' – '+hm(new Date()))};
+ const PK=$('pK');if(PK)PK.onchange=()=>{if(PK.value===it.k)return;snap();(it.hist=it.hist||[]).push({t:Date.now(),from:it.k,to:PK.value});it.k=PK.value;save();render();toast(pkName(it.k)+' – '+hm(new Date()))};
  const PV=$('pV');if(PV)PV.onchange=()=>{snap();delete it.va;if(PV.value==='txt'){delete it.v;it.vt=it.vt||'';save();renderProps();$('pVt')?.focus();return}delete it.vt;const V=targets(s.items)[+PV.value];if(V){if(!V.id)V.id=uid();it.v=V.id}else delete it.v;save();renderMap();renderProps()};
  const PVt=$('pVt');if(PVt){PVt.oninput=()=>{it.vt=PVt.value;renderMap();saveSoon()}}
  const N=$('pN');if(N){N.onfocus=()=>snap();N.oninput=()=>{const v=parseInt(N.value,10);it.n=v>0?Math.min(v,999):0;renderMap();saveSoon()}}
@@ -611,7 +612,6 @@ $('props').onclick=e=>{const a=e.target.closest('[data-a]')?.dataset.a,s=sh(),it
  if((a==='w-'||a==='w+')&&it.t==='line'&&it.k==='road'){it.w=Math.max(80,Math.min(1200,(it.w||280)+(a==='w+'?40:-40)))}
  else if(a==='w-'||a==='w+'){const key=it.t==='room'?'sw':'w',d={wall:10,room:6,line:4}[it.t];it[key]=Math.max(1,Math.min(40,(it[key]||d)+(a==='w+'?2:-2)))}
  if(a.startsWith('c-'))it.c=a.slice(2);
- if(a==='ek'){it.ek=!it.ek;if(!it.ek)delete it.ek}
  if(a==='split'&&(+it.n||1)>1){const c=JSON.parse(JSON.stringify(it));c.n=0;c.pp=[(it.pp||[]).splice(+it.n-1,1)[0]||{}];delete c.id;c.x=r1(it.x+140*(it.s||1));c.y=r1(it.y);it.n=+it.n-1;if(it.n<=1)it.n=0;s.items.push(c);sel=s.items.length-1}
  if(a==='n+')it.n=Math.min(999,(+it.n||0)+1);if(a==='n-')it.n=Math.max(0,(+it.n||0)-1);
  if(a==='m0')delete it.m;if(a==='m?')it.m='?';if(a==='m!')it.m='!';
@@ -793,7 +793,7 @@ function migRec(r){if(r.name!==undefined&&r.nach===undefined&&r.vor===undefined)
 const adrOf=r=>[r.str,[r.plz,r.ort2].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 const fmtGeb=v=>{const d=v.replace(/\D/g,'');return d.length===8&&!/\./.test(v)?d.slice(0,2)+'.'+d.slice(2,4)+'.'+d.slice(4):v};
 function persRows(){const o=op();if(!o)return[];const R=[];(o.maps||[]).forEach((m,mi)=>m.items.forEach((it,ii)=>{if(!isP(it))return;const n=Math.max(1,+it.n||1);it.pp=it.pp||[];
-  for(let k=0;k<n;k++){it.pp[k]=migRec(it.pp[k]||{});const V=it.v?m.items.find(x=>x.id===it.v):null;R.push({ref:`m:${mi}:${ii}:${k}`,rec:it.pp[k],art:SYM[it.k].n+(it.ek?' (eingeklemmt)':''),hist:histTxt(it),st:it.m||'',k,n,sheet:m.name,ort:V?tgName(V):it.vt||'',lbl:it.l||'',uri:SYM[it.k].uri,mi,ii})}}));
+  for(let k=0;k<n;k++){it.pp[k]=migRec(it.pp[k]||{});const V=it.v?m.items.find(x=>x.id===it.v):null;R.push({ref:`m:${mi}:${ii}:${k}`,rec:it.pp[k],art:SYM[it.k].n,hist:histTxt(it),st:it.m||'',k,n,sheet:m.name,ort:V?tgName(V):it.vt||'',lbl:it.l||'',uri:SYM[it.k].uri,mi,ii})}}));
  (o.extra=o.extra||[]).forEach((r,j)=>R.push({ref:`x:${j}`,rec:migRec(r),art:r.art||'Person (ohne Zeichen)',st:'',k:0,n:1,sheet:'',ort:r.ort||'',lbl:'',uri:SYM.p.uri,extra:1,j}));return R}
 function recOf(ref){const o=op(),a=ref.split(':');if(a[0]==='x')return o.extra[+a[1]];const it=o.maps[+a[1]].items[+a[2]];it.pp=it.pp||[];return it.pp[+a[3]]=it.pp[+a[3]]||{}}
 function renderPers(){const R=persRows(),f=$('pFlt').value;$('tabPersN').textContent=R.length?` (${R.length})`:'';
